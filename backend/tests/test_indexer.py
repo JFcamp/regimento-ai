@@ -105,6 +105,22 @@ def test_cache_de_embeddings_retoma_apos_queda(tmp_path: Path) -> None:
     assert sum(chamadas) == 10
 
 
+def test_gravacao_funciona_com_pymupdf_importado_depois_do_faiss(tmp_path: Path) -> None:
+    # Regressão: com `fitz` importado depois do `faiss`, faiss.serialize_index falha (conflito de tipos SWIG)
+    import subprocess
+    import sys
+
+    codigo = (
+        "import faiss, numpy as np\nimport fitz\nfrom pathlib import Path\n"
+        "from backend.indexer import _gravar_faiss, _ler_faiss\n"
+        "i = faiss.IndexFlatIP(4); i.add(np.ones((2, 4), dtype='float32'))\n"
+        f"p = Path(r'{tmp_path}') / 'x.faiss'; _gravar_faiss(i, p); print(_ler_faiss(p).ntotal)\n"
+    )
+    r = subprocess.run([sys.executable, "-W", "ignore", "-c", codigo], capture_output=True, timeout=120)
+    assert r.returncode == 0, r.stderr.decode("utf-8", "replace")[-400:]
+    assert r.stdout.decode().strip() == "2"
+
+
 def test_limpar_indice_preserva_gitkeep_e_arquivos_alheios(tmp_path: Path) -> None:
     (tmp_path / ".gitkeep").write_text("")
     (tmp_path / "outro.txt").write_text("x")

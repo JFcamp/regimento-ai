@@ -206,3 +206,5 @@ Exemplos de perguntas sem resposta nos documentos: valor da taxa de inscrição 
 6. **Provedores:** modelo avaliado nos dois modos (sem RAG e com RAG), temperatura 0: OpenAI `gpt-4o-mini`. Juiz: Anthropic (Claude), outro fornecedor, para reduzir viés; prompt do juiz versionado em `eval/`. Chaves em `.env` (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`), nunca commitadas.
 7. **Conflito de atividades complementares:** aprovado como está (`conflito: true` e citar a vigência de cada fonte). No pôster, vira exemplo de por que citar a fonte importa.
 8. **Fluxo:** um commit por etapa, push ao final de cada uma.
+
+9. **Revisão do plano (Etapa 3 em diante):** modelo avaliado e do chat = Google Gemini (plano gratuito, temperatura 0); juiz = Groq (Llama grande). Substitui o item 6 acima (`gpt-4o-mini` e juiz Anthropic). Cortes de escopo: deploy online, Docker, provedores openai/anthropic/local, calibração fina de `MIN_SCORE`, testes `slow` e tela de avaliação interativa. Detalhes em `design.md`, seção 11.

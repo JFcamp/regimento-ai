@@ -40,15 +40,15 @@ Regras de execução:
 
 ## Etapa 3 — Backend (R3.1 a R3.7)
 
-- [ ] 3.1 `schemas.py` e `prompts.py` (RAG e sem RAG).
-- [ ] 3.2 `retriever.py` com top-k, dedup e limiar.
-- [ ] 3.3 `generator.py` com providers `local`, `openai`, `anthropic` e streaming.
-- [ ] 3.4 `citations.py` (extração do literal, `valida`, fallback para recusa).
-- [ ] 3.5 `main.py`: `/chat`, `/chat?modo=sem_rag`, `/documentos`, `/health`, tratamento de erros.
-- [ ] 3.6 Calibrar `MIN_SCORE` e `FUZZY_THRESHOLD` em perguntas de desenvolvimento (separadas das 50 do teste).
-- [ ] 3.7 Testes pytest de retriever e citações.
-- [ ] 3.8 Verificar: toda resposta do RAG tem ≥1 citação válida ou recusa explícita (critério de aceite 1).
-- [ ] 3.9 Commit da etapa.
+- [x] 3.1 `schemas.py` e `prompts.py` (RAG e sem RAG).
+- [x] 3.2 `retriever.py` com top-k, dedup e limiar.
+- [x] 3.3 `generator.py` com providers `local`, `openai`, `anthropic` e streaming.
+- [x] 3.4 `citations.py` (extração do literal, `valida`, fallback para recusa).
+- [x] 3.5 `main.py`: `/chat`, `/chat?modo=sem_rag`, `/documentos`, `/health`, tratamento de erros.
+- [ ] 3.6 (cortado hoje; ver design 11) Calibrar `MIN_SCORE` e `FUZZY_THRESHOLD` em perguntas de desenvolvimento (separadas das 50 do teste).
+- [x] 3.7 Testes pytest de retriever e citações.
+- [x] 3.8 Verificar: toda resposta do RAG tem ≥1 citação válida ou recusa explícita (critério de aceite 1).
+- [x] 3.9 Commit da etapa.
 
 ## Etapa 4 — Banco de perguntas (R4.1 a R4.5)
 

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 from pathlib import Path
 from typing import Callable
@@ -101,14 +102,29 @@ def construir_indice(chunks: list[Chunk], embed: EmbedFn) -> faiss.Index:
     return index
 
 
+def _serializar(index: faiss.Index) -> bytes:
+    """Bytes do índice sem `faiss.serialize_index`.
+
+    PyMuPDF e FAISS são gerados com SWIG; se o `fitz` é importado depois do `faiss`, o `std::vector<uint8_t>`
+    passa a ser devolvido como `pymupdf.mupdf.vectoruc` e o `serialize_index` falha (AssertionError em
+    vector_to_array). Ler o buffer pelo ponteiro evita depender da ordem dos imports.
+    """
+    partes: list[bytes] = []
+    escritor = faiss.PyCallbackIOWriter(lambda b: partes.append(bytes(b)))
+    faiss.write_index(index, escritor)
+    del escritor  # descarrega o buffer interno do escritor
+    return b"".join(partes)
+
+
 def _gravar_faiss(index: faiss.Index, caminho: Path) -> None:
     """O FAISS (C++) não abre caminhos com acentos no Windows (ex.: 'Área de Trabalho'),
     então serializamos em memória e deixamos o Python gravar o arquivo."""
-    caminho.write_bytes(faiss.serialize_index(index).tobytes())
+    caminho.write_bytes(_serializar(index))
 
 
 def _ler_faiss(caminho: Path) -> faiss.Index:
-    return faiss.deserialize_index(np.frombuffer(caminho.read_bytes(), dtype="uint8"))
+    leitor = faiss.PyCallbackIOReader(io.BytesIO(caminho.read_bytes()).read)
+    return faiss.read_index(leitor)
 
 
 def verificar_escrita(index_dir: Path) -> None:

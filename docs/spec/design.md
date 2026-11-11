@@ -240,3 +240,36 @@ Decisões tomadas durante a ingestão, que refinam ou substituem trechos acima.
 - **Desempenho:** em CPU (i5-10210U), os embeddings dos ~1.370 chunks levam ~20 minutos.
 - **Verificação do índice (7 consultas reais, `multilingual-e5-base`):** nas consultas com trecho esperado, ele aparece no top 3 em 3 de 4 casos problemáticos (posições 2 ou 3); os scores do e5 ficam numa faixa estreita (0,82 a 0,89), então o limiar `MIN_SCORE` da Etapa 3 precisa ser calibrado com dados, não escolhido de cabeça. Casos a tratar no retriever: (a) o chunk curto do Art. 4 das atividades complementares ("210 horas/aula") não aparece nem no top 30, mas o Art. 5, da mesma página, é o #2, então a **recuperação por página inteira** (como no notebook de origem) resolve; (b) o PPC repete o texto das atividades complementares e compete com o regulamento (conflito já previsto na seção 1.3 dos requisitos); (c) perguntas de graduação recuperam a pós-graduação no top 1, e o contrário também, então o retriever deve usar o `escopo` (aviso no contexto e, se necessário, filtro ou reordenação).
 - **Retomada:** `data/index/emb_cache.npz` guarda os embeddings por bloco (chave = modelo + texto); uma ingestão interrompida continua de onde parou. O FAISS é gravado via `serialize_index`, porque o `write_index` não abre caminhos com acento no Windows (`Área de Trabalho`).
+
+## 11. Etapa 3 implementada: backend (decisões e medições)
+
+**Recuperação** (`backend/retriever.py`): BM25 (`rank_bm25`, texto sem acento, minúsculo, sem stopwords, radical de 6 letras) + e5 fundidos por RRF (k=60, 40 candidatos por ranking); depois expansão para a **página inteira** (`MAX_PAGINAS=3`, como no notebook de origem). Roteamento de escopo: graduação por padrão; documentos de pós-graduação só entram se a pergunta citar mestrado, doutorado, pós-graduação, stricto sensu, dissertação, tese, qualificação etc. Se um trecho de pós vier no contexto, o prompt manda avisar e o backend acrescenta o aviso se o modelo não o fizer. Hierarquia: chunks do PPC têm o score multiplicado por `PESO_PPC=0.85` e as páginas do PPC vão depois das de norma específica no contexto. Divergência: o backend compara quantidades com unidade (h-a, horas, créditos, períodos, dias, %) entre PPC e norma e avisa; o prompt manda citar as duas fontes com a vigência de cada uma.
+
+**Medição (7 consultas de validação, acerto = documento e artigo esperados; `python -m backend.medir_recuperacao`):**
+
+| modo | hit@1 | hit@3 | página inteira contém a resposta |
+|---|---|---|---|
+| denso (Etapa 2) | 4/7 | 5/7 | 7/7 |
+| bm25 | 2/7 | 4/7 | 5/7 |
+| rrf | 2/7 | 5/7 | 7/7 |
+| híbrido (rrf + escopo + hierarquia) | 3/7 | 6/7 | 7/7 |
+
+Leitura honesta: o híbrido sobe o hit@3 de 5/7 para 6/7, mas o hit@1 cai de 4/7 para 3/7. O Art. 4 das atividades complementares ("210 horas/aula") **continua fora do top 3 de chunks**; ele chega ao LLM porque está na mesma página que o Art. 5, que é o #1. O ganho que importa para a resposta vem da expansão por página inteira (contexto com a resposta em 7/7, inclusive no denso). O conjunto é pequeno (7 consultas) e não prova melhora estatística do híbrido; a avaliação das 50 perguntas (Etapa 5) mede recall@3 da página do gabarito.
+
+**Provedores** (custo zero): modelo avaliado e do chat = **Google Gemini** (`GEMINI_API_KEY`, `GEMINI_MODEL`), temperatura 0; juiz = **Groq** com Llama grande (`GROQ_API_KEY`, `GROQ_MODEL`), outro fornecedor. OpenAI, Anthropic e local foram **cortados** do código por decisão de escopo (o `.env.example` não os lista mais). Os nomes de modelo vêm só do `.env`: fontes públicas divergem sobre qual Flash está no plano gratuito, sobre os limites diários (de ~20 a ~500 pedidos/dia conforme o modelo) e sobre a aposentadoria do `llama-3.3-70b-versatile` para contas gratuitas; use `python -m backend.listar_modelos` para ver o que a chave enxerga. Retry com backoff exponencial e jitter em 429/5xx (respeita `Retry-After`) e espaçamento mínimo entre pedidos (`GEMINI_RPM`, `GROQ_RPM`). A chave vai em cabeçalho e não aparece em erros.
+
+**Citações:** para cada `[n]` usado, o backend escolhe na página n a janela de 1 a 2 frases mais parecida com a frase da resposta (RapidFuzz `token_set_ratio`) e a devolve como `trecho_literal`. A citação é `valida` se o literal existe na página (exato normalizado ou fuzzy >= `FUZZY_THRESHOLD`) **e** a frase é sustentada pelo literal (`SUPORTE_THRESHOLD`). Resposta do RAG sem nenhuma citação válida é trocada pela recusa (evento SSE `substituir`).
+
+**Eventos SSE:** `aviso` (dados pessoais mascarados, divergência, pós-graduação), `token`, `substituir`, `citacoes`, `fim` (`recusa`, `n_trechos`, `motivo`, `paginas`, `divergencia`, `cache`), `erro`.
+
+**Privacidade:** CPF e número de matrícula (com a palavra "matrícula") são mascarados antes de qualquer envio ao LLM; o valor original não é registrado. O plano gratuito do Gemini pode usar os dados enviados para melhorar produtos do Google: o frontend avisa para não digitar dados pessoais.
+
+**MIN_SCORE:** a calibração fina foi **cortada** por escopo. `MIN_SCORE` vem desligado (`None`); a recusa depende do prompt, da verificação de citações e da ausência de páginas recuperadas. Os scores do e5 ficam numa faixa estreita (0,82 a 0,89), então um limiar fixo exige calibração com dados antes de ser ligado. Pendente.
+
+**Demo offline:** `data/cache/sugeridas.json` guarda as respostas reais das 8 perguntas sugeridas (`python -m backend.build_cache`, precisa de chaves); se a pergunta digitada é uma sugerida e há cache, a API responde sem LLM.
+
+**Para a Etapa 7 (deploy):** `data/index/` não está no git. Num deploy, o índice precisa ser **gerado no build** (`python -m backend.ingest`, ~20 min em CPU) ou **baixado de um artefato** (por exemplo, um release do GitHub com `index.faiss`, `chunks.json`, `paginas.json`, `meta.json`). Deploy e Docker estão fora do escopo de hoje.
+
+**Bloqueio registrado:** durante o desenvolvimento não havia `.env` nem variáveis `GEMINI_API_KEY`/`GROQ_API_KEY` na máquina, então os provedores foram testados com transporte HTTP simulado (retry, streaming, erros), não contra as APIs reais.
+
+**Bug corrigido (FAISS + PyMuPDF):** os dois são gerados com SWIG; se o `fitz` é importado depois do `faiss`, o `std::vector<uint8_t>` do FAISS passa a ser devolvido como `pymupdf.mupdf.vectoruc` e o `faiss.serialize_index` falha. Apareceu só na suíte completa de testes (ordem de import diferente da ingestão). O índice agora é gravado e lido com `PyCallbackIOWriter`/`PyCallbackIOReader` (bytes do Python, sem `std::vector`), com teste de regressão em subprocesso.
