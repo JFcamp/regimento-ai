@@ -17,26 +17,26 @@ Regras de execução:
 
 ## Etapa 1 — Estrutura do repositório (R1.4 a R1.8)
 
-- [ ] 1.1 Resolver a conta GitHub: confirmar que `gh` tem permissão em `JFcamp` (ou fazer `gh auth login` na conta certa).
-- [ ] 1.2 Criar a estrutura de pastas e arquivos (`.gitkeep` onde vazio, `.env.example`, `.gitignore`, `README.md` mínimo).
-- [ ] 1.3 `.gitignore`: `data/index/`, `documentos-rag/`, `.env`, `.venv/`, `__pycache__/`, `node_modules/`, `dist/`, caches de modelos.
-- [ ] 1.4 Colocar `data/pdfs/` e `manifest.json` conforme a decisão sobre versionar PDFs.
-- [ ] 1.5 Copiar a spec para `docs/spec/`.
-- [ ] 1.6 `git init`, remoto `JFcamp/regimento-ai` (público), commit único `chore: estrutura inicial do Regimento.AI`, push.
-- [ ] 1.7 Verificar: `gh repo view JFcamp/regimento-ai`, árvore no remoto igual à de R1.4, `data/index/` e `documentos-rag/` ausentes do remoto.
+- [x] 1.1 Resolver a conta GitHub: confirmar que `gh` tem permissão em `JFcamp` (ou fazer `gh auth login` na conta certa).
+- [x] 1.2 Criar a estrutura de pastas e arquivos (`.gitkeep` onde vazio, `.env.example`, `.gitignore`, `README.md` mínimo).
+- [x] 1.3 `.gitignore`: `data/index/`, `documentos-rag/`, `.env`, `.venv/`, `__pycache__/`, `node_modules/`, `dist/`, caches de modelos.
+- [x] 1.4 Colocar `data/pdfs/` e `manifest.json` conforme a decisão sobre versionar PDFs.
+- [x] 1.5 Copiar a spec para `docs/spec/`.
+- [x] 1.6 `git init`, remoto `JFcamp/regimento-ai` (público), commit único `chore: estrutura inicial do Regimento.AI`, push.
+- [x] 1.7 Verificar: `gh repo view JFcamp/regimento-ai`, árvore no remoto igual à de R1.4, `data/index/` e `documentos-rag/` ausentes do remoto.
 
 ## Etapa 2 — Ingestão (R2.1 a R2.8)
 
-- [ ] 2.1 `backend/requirements.txt` com versões fixas (pymupdf, faiss-cpu, sentence-transformers, rapidfuzz, pydantic-settings, fastapi, uvicorn, pytest, pytesseract).
-- [ ] 2.2 `config.py` e `.env.example` completos.
-- [ ] 2.3 `manifest.json` com os 10 documentos, vigência e escopo.
-- [ ] 2.4 `extract.py`: texto por página, limpeza SEI, remapeamento PUA com validação, OCR com fallback para "ignorada".
-- [ ] 2.5 Instalar Tesseract com idioma `por` (se autorizado) e testar nas págs 48 a 56 do PPC.
-- [ ] 2.6 `chunking.py`: detecção de artigo/§, chunks 800/150 sem cortar artigo curto, tabelas.
-- [ ] 2.7 `indexer.py` + `ingest.py`: embeddings e5 (prefixos), FAISS, `chunks.json`, `ingest_report.json`.
-- [ ] 2.8 Testes pytest de ingestão (design seção 8).
-- [ ] 2.9 Verificar: `python -m backend.ingest` do zero, zero caracteres de área privada no índice, relatório com os 10 docs.
-- [ ] 2.10 Commit da etapa.
+- [x] 2.1 `backend/requirements.txt` com versões fixas (pymupdf, faiss-cpu, sentence-transformers, rapidfuzz, pydantic-settings, fastapi, uvicorn, pytest, pytesseract).
+- [x] 2.2 `config.py` e `.env.example` completos.
+- [x] 2.3 `manifest.json` com os 10 documentos, vigência e escopo.
+- [x] 2.4 `extract.py`: texto por página, limpeza SEI, remapeamento PUA com validação, OCR com fallback para "ignorada".
+- [x] 2.5 ~~Instalar Tesseract~~ Dispensado por decisão do projeto: págs 48 a 56 do PPC excluídas pelo manifesto e registradas no relatório.
+- [x] 2.6 `chunking.py`: detecção de artigo/§, chunks 800/150 sem cortar artigo curto, tabelas.
+- [x] 2.7 `indexer.py` + `ingest.py`: embeddings e5 (prefixos), FAISS, `chunks.json`, `ingest_report.json`.
+- [x] 2.8 Testes pytest de ingestão (design seção 8).
+- [x] 2.9 Verificar: `python -m backend.ingest` do zero, zero caracteres de área privada no índice, relatório com os 10 docs.
+- [x] 2.10 Commit da etapa.
 
 ## Etapa 3 — Backend (R3.1 a R3.7)
 

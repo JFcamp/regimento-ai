@@ -224,3 +224,19 @@ Os testes de recuperação usam um índice pequeno gerado em `tmp_path` com 2 ou
 | Banco de 50 perguntas pequeno | Declarar ICs largos; não generalizar |
 | Juiz LLM enviesado | Prompt versionado, juiz distinto do avaliado, amostra revisada à mão |
 | PDFs públicos com possíveis direitos | Confirmar antes do push público |
+
+## 10. Notas da implementação (Etapa 2)
+
+Decisões tomadas durante a ingestão, que refinam ou substituem trechos acima.
+
+- **Sem OCR.** Tesseract não foi instalado (decisão do projeto). As páginas 48 a 56 do PPC são excluídas pelo manifesto (`paginas_excluidas`) e aparecem no `ingest_report.json`. Páginas sem texto que não estejam no manifesto vão para `paginas_ignoradas`.
+- **Remapeamento de glifos** (seção 3.2) ficou assim: (1) glifo que vem logo após dígito em >= 90% das ocorrências é o ordinal "º" (caso do PPC, `U+F06F`); (2) os demais são inferidos testando candidatas (`t`, `f`, `fi`, `fl`, `ti`, `tí`...) contra um vocabulário formado pelas palavras dos documentos sem glifos privados, mais `VOCAB_EXTRA` (termos latinos/ingleses e três palavras raras conferidas na página renderizada). Só conta como evidência palavra com 3 ou mais letras fora do glifo. Glifo ambíguo ou sem evidência interrompe a ingestão com `ErroRemapeamento` (código de saída 2) e mantém o índice anterior; não há fallback para OCR.
+- **PDF de extensão (Res. CEPE 6/2022)** é digitalizado com camada de OCR, e o "º" aparece como "2" ("Art. 32" = Art. 3º). A numeração é corrigida pela sequência esperada.
+- **Tabelas:** não foi usado `find_tables()`. A ordem natural de leitura do PyMuPDF já mantém cada linha da tabela de atividades complementares junta (conferido no chunk de "Monitoria").
+- **Títulos** de capítulo e seção (`CAPÍTULO`, `Seção`, `TÍTULO`) vão no chunk do artigo seguinte, não no anterior.
+- **Limpeza:** além das regex do SEI, remove-se linha de borda (4 primeiras e 4 últimas) cujo texto, ignorando dígitos, se repete em >= 60% das páginas, em documentos com 4 páginas ou mais.
+- **`paginas.json`** guarda o texto limpo de cada página indexada, para a recuperação por página inteira da Etapa 3 (como no notebook de origem).
+- **Ambiente:** `backend/__init__.py` define `USE_TF=0`, porque o TensorFlow instalado na máquina atrasava o import do `transformers` por minutos. `python -m backend.download_model` baixa só os arquivos necessários do e5 (os `.eval_results/*.yaml` do repositório exigem symlink, que o Windows nega sem privilégio de administrador).
+- **Desempenho:** em CPU (i5-10210U), os embeddings dos ~1.370 chunks levam ~20 minutos.
+- **Verificação do índice (7 consultas reais, `multilingual-e5-base`):** nas consultas com trecho esperado, ele aparece no top 3 em 3 de 4 casos problemáticos (posições 2 ou 3); os scores do e5 ficam numa faixa estreita (0,82 a 0,89), então o limiar `MIN_SCORE` da Etapa 3 precisa ser calibrado com dados, não escolhido de cabeça. Casos a tratar no retriever: (a) o chunk curto do Art. 4 das atividades complementares ("210 horas/aula") não aparece nem no top 30, mas o Art. 5, da mesma página, é o #2, então a **recuperação por página inteira** (como no notebook de origem) resolve; (b) o PPC repete o texto das atividades complementares e compete com o regulamento (conflito já previsto na seção 1.3 dos requisitos); (c) perguntas de graduação recuperam a pós-graduação no top 1, e o contrário também, então o retriever deve usar o `escopo` (aviso no contexto e, se necessário, filtro ou reordenação).
+- **Retomada:** `data/index/emb_cache.npz` guarda os embeddings por bloco (chave = modelo + texto); uma ingestão interrompida continua de onde parou. O FAISS é gravado via `serialize_index`, porque o `write_index` não abre caminhos com acento no Windows (`Área de Trabalho`).

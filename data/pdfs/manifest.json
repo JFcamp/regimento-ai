@@ -104,6 +104,7 @@
       "vigencia": "2026-03-23",
       "paginas": 23,
       "observacao": "Não é o Regimento Geral da UFV, apesar do nome original do arquivo. Texto com glifos privados: exige remapeamento na ingestão.",
+      "validar_contem": ["Art.", "Stricto"],
       "fonte_oficial": null
     }
   ]

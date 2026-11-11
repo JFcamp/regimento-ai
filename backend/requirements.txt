@@ -1,0 +1,12 @@
+# Versões fixadas conforme o ambiente em que a Etapa 2 foi validada (Python 3.12).
+# torch: instale a build adequada ao seu hardware (CPU: https://download.pytorch.org/whl/cpu).
+# Dependências de API/LLM (fastapi, uvicorn, openai, anthropic) entram na Etapa 3.
+PyMuPDF==1.25.5
+faiss-cpu==1.11.0
+sentence-transformers==4.1.0
+transformers==4.57.6
+numpy==1.26.4
+pydantic==2.11.4
+pydantic-settings==2.15.0
+RapidFuzz==3.14.6
+pytest==9.1.1
