@@ -1,0 +1,35 @@
+{
+ "gerado_em": "2026-11-11T18:08:53",
+ "status": "so_recuperacao",
+ "config": {
+  "provedor": "gemini",
+  "modelo": "gemini-flash-latest",
+  "juiz": "groq",
+  "modelo_juiz": "llama-3.3-70b-versatile",
+  "temperatura": 0.0,
+  "prompt": "v1",
+  "prompt_juiz": "v1",
+  "hash_perguntas": "a575e6ff6f30",
+  "embeddings": "intfloat/multilingual-e5-base",
+  "max_paginas": 3
+ },
+ "n_perguntas": 50,
+ "revisadas": 0,
+ "aviso": "Gabarito ainda não revisado por humano (revisado=false): números preliminares.",
+ "recuperacao": {
+  "recall_at_3": 0.9111,
+  "acertos": 41,
+  "n": 45,
+  "ic95": [
+   0.8222,
+   0.9778
+  ]
+ },
+ "modos": {},
+ "por_categoria": {},
+ "pendentes": {
+  "sem_rag": 50,
+  "rag": 50
+ },
+ "csv": "2026-11-11.csv"
+}
