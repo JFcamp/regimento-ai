@@ -1,0 +1,40 @@
+# Índice gerado (FAISS + metadados). Reconstrua com: python -m backend.ingest
+data/index/*
+!data/index/.gitkeep
+
+# Backup local dos PDFs originais
+documentos-rag/
+
+# Segredos
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+
+# Caches de modelos
+.cache/
+models/
+huggingface/
+
+# Clones temporários e notebooks
+rag-plantas-medicinais/
+.ipynb_checkpoints/
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

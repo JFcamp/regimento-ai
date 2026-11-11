@@ -1,0 +1,110 @@
+{
+  "versao": 1,
+  "observacao": "Fonte de verdade dos documentos indexados. 'arquivo' é o nome em data/pdfs/. 'arquivo_original' só aparece quando o arquivo foi renomeado.",
+  "documentos": [
+    {
+      "id": "res-cepe-30-2026-regime-didatico",
+      "arquivo": "SEI-UFV-Resolucao-30-2026.pdf",
+      "titulo": "Resolução CEPE/UFV nº 30/2026 - Regime Didático dos cursos de graduação",
+      "tipo": "resolucao",
+      "escopo": "graduacao",
+      "vigencia": "2026-04-23",
+      "paginas": 25,
+      "fonte_oficial": null
+    },
+    {
+      "id": "res-cepe-24-2025-calendario",
+      "arquivo": "calendario.pdf",
+      "titulo": "Resolução CEPE/UFV nº 24/2025 - Calendário escolar 2026/1 e 2026/2 (texto consolidado)",
+      "tipo": "calendario",
+      "escopo": "graduacao",
+      "vigencia": "2025-11-10",
+      "paginas": 10,
+      "fonte_oficial": null
+    },
+    {
+      "id": "catalogo-2023-si-integral",
+      "arquivo": "MatrizCurricular2023-Sistemas-de-informacao.pdf",
+      "titulo": "Catálogo 2023 - Sistemas de Informação (Integral), matriz curricular",
+      "tipo": "matriz-curricular",
+      "escopo": "curso-si",
+      "vigencia": "2023",
+      "paginas": 5,
+      "fonte_oficial": null
+    },
+    {
+      "id": "ppc-si-2022",
+      "arquivo": "PPC-Sistemas_de_Informacao2022-.pdf",
+      "titulo": "Projeto Pedagógico do Curso de Bacharelado em Sistemas de Informação (2022)",
+      "tipo": "ppc",
+      "escopo": "curso-si",
+      "vigencia": "2022",
+      "paginas": 272,
+      "paginas_excluidas": [48, 49, 50, 51, 52, 53, 54, 55, 56],
+      "motivo_exclusao": "Anexo I: ata escaneada da 448ª reunião do CEPE (sem texto e sem valor para as perguntas).",
+      "fonte_oficial": null
+    },
+    {
+      "id": "regulamento-tcc-si",
+      "arquivo": "RegulamentoTCC_Sistemas_2026-1.pdf",
+      "titulo": "Regulamento do Trabalho de Conclusão de Curso de Sistemas de Informação (UFV-CRP)",
+      "tipo": "regulamento-curso",
+      "escopo": "curso-si",
+      "vigencia": "2025",
+      "paginas": 9,
+      "fonte_oficial": null
+    },
+    {
+      "id": "regulamento-atividades-complementares-si",
+      "arquivo": "RegulamentoAtividadeComplementares_2021_atual.pdf",
+      "titulo": "Regulamento das Atividades Complementares de Sistemas de Informação (UFV-CRP)",
+      "tipo": "regulamento-curso",
+      "escopo": "curso-si",
+      "vigencia": "2021",
+      "paginas": 5,
+      "fonte_oficial": null
+    },
+    {
+      "id": "res-cepe-6-2022-extensao",
+      "arquivo": "Resolucao-Cepe-6-2022-Creditacao-das-atividades-de-extensao-1.pdf",
+      "titulo": "Resolução CEPE nº 6/2022 - Creditação curricular das atividades de extensão",
+      "tipo": "resolucao",
+      "escopo": "graduacao",
+      "vigencia": "2022-04-01",
+      "paginas": 5,
+      "fonte_oficial": null
+    },
+    {
+      "id": "res-cepe-8-2024-mobilidade",
+      "arquivo": "Resolucao-Cepe-no-8-2024-Regulamenta-a-politica-e-estabelece-os-procedimentos-de-Mobilidade-Academica-da-graduacao-da-UFV.pdf",
+      "titulo": "Resolução CEPE/UFV nº 8/2024 - Mobilidade Acadêmica da graduação",
+      "tipo": "resolucao",
+      "escopo": "graduacao",
+      "vigencia": "2024-09-11",
+      "paginas": 5,
+      "fonte_oficial": null
+    },
+    {
+      "id": "orientacoes-colacao-grau-2026-1",
+      "arquivo": "Orientacoes-Colacao-de-Grau.pdf",
+      "titulo": "Orientações para a colação de grau 2026/1 (Diretoria de Ensino, UFV-CRP)",
+      "tipo": "aviso",
+      "escopo": "curso-si",
+      "vigencia": "2026",
+      "paginas": 2,
+      "fonte_oficial": null
+    },
+    {
+      "id": "res-cepe-29-2026-pos-graduacao",
+      "arquivo": "Resolucao-CEPE-29-2026-Pos-Graduacao.pdf",
+      "arquivo_original": "REGIMENTO-GERAL-UFV-2026.pdf",
+      "titulo": "Resolução CEPE/UFV nº 29/2026 - Regimento da Pós-Graduação Stricto Sensu",
+      "tipo": "resolucao",
+      "escopo": "pos-graduacao",
+      "vigencia": "2026-03-23",
+      "paginas": 23,
+      "observacao": "Não é o Regimento Geral da UFV, apesar do nome original do arquivo. Texto com glifos privados: exige remapeamento na ingestão.",
+      "fonte_oficial": null
+    }
+  ]
+}
