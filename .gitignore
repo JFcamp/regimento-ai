@@ -41,3 +41,7 @@ Thumbs.db
 
 # Arquivos temporários de trabalho
 .tmp/
+
+# Logs do run.ps1
+data/cache/*.log
+data/cache/*.log.err

@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" width="1200" height="640" font-family="Inter, 'DejaVu Sans', Arial, sans-serif" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Arquitetura do Regimento.AI</title>
+  <desc id="desc">Ingestão dos PDFs oficiais para um índice FAISS e BM25; o backend FastAPI faz busca híbrida, monta o contexto com páginas inteiras, chama o Gemini e verifica as citações; o frontend React mostra resposta e fontes; a avaliação compara o mesmo LLM com e sem RAG, julgado pelo Groq.</desc>
+  <defs>
+    <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#57534e"/>
+    </marker>
+    <style>
+      .caixa { fill: #ffffff; stroke: #d6d3d1; stroke-width: 1.5; }
+      .vinho { fill: #7a1f2b; }
+      .claro { fill: #fbf3f4; stroke: #ebc3c8; stroke-width: 1.5; }
+      .externo { fill: #f5f5f4; stroke: #a8a29e; stroke-width: 1.5; stroke-dasharray: 6 4; }
+      .t { fill: #1c1917; font-size: 15px; font-weight: 600; }
+      .s { fill: #57534e; font-size: 12.5px; }
+      .b { fill: #ffffff; font-size: 15px; font-weight: 700; }
+      .rot { fill: #7a1f2b; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; }
+      .linha { stroke: #57534e; stroke-width: 1.6; fill: none; marker-end: url(#seta); }
+      .tracejada { stroke: #a8a29e; stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; marker-end: url(#seta); }
+    </style>
+  </defs>
+
+  <rect width="1200" height="640" fill="#fafaf9"/>
+  <text x="40" y="44" class="t" font-size="22" style="font-size:22px">Regimento.AI · arquitetura</text>
+  <text x="40" y="66" class="s">RAG sobre os documentos oficiais da UFV (SI, campus Rio Paranaíba)</text>
+
+  <!-- Ingestão -->
+  <text x="40" y="112" class="rot">1 · INGESTÃO (offline)</text>
+  <rect x="40" y="124" width="220" height="92" rx="12" class="caixa"/>
+  <text x="58" y="152" class="t">10 PDFs oficiais</text>
+  <text x="58" y="174" class="s">data/pdfs + manifest.json</text>
+  <text x="58" y="194" class="s">vigência e escopo por documento</text>
+
+  <rect x="300" y="124" width="250" height="92" rx="12" class="caixa"/>
+  <text x="318" y="152" class="t">python -m backend.ingest</text>
+  <text x="318" y="174" class="s">PyMuPDF · limpeza SEI · glifos</text>
+  <text x="318" y="194" class="s">chunks por artigo (~800 / 150)</text>
+
+  <rect x="590" y="124" width="250" height="92" rx="12" class="claro"/>
+  <text x="608" y="152" class="t">Índice (data/index)</text>
+  <text x="608" y="174" class="s">FAISS · multilingual-e5-base</text>
+  <text x="608" y="194" class="s">chunks.json · paginas.json</text>
+
+  <path d="M260 170 H296" class="linha"/>
+  <path d="M550 170 H586" class="linha"/>
+
+  <!-- Backend -->
+  <text x="40" y="270" class="rot">2 · BACKEND (FastAPI)</text>
+  <rect x="40" y="282" width="800" height="180" rx="14" class="caixa"/>
+
+  <rect x="62" y="304" width="170" height="136" rx="10" class="claro"/>
+  <text x="78" y="330" class="t">Pergunta</text>
+  <text x="78" y="352" class="s">máscara de CPF</text>
+  <text x="78" y="370" class="s">e matrícula</text>
+  <text x="78" y="394" class="s">escopo: graduação,</text>
+  <text x="78" y="412" class="s">pós só se citada</text>
+
+  <rect x="252" y="304" width="190" height="136" rx="10" class="claro"/>
+  <text x="268" y="330" class="t">Busca híbrida</text>
+  <text x="268" y="352" class="s">BM25 + e5 → RRF</text>
+  <text x="268" y="374" class="s">norma antes do PPC</text>
+  <text x="268" y="396" class="s">até 3 páginas inteiras</text>
+  <text x="268" y="418" class="s">aviso de divergência</text>
+
+  <rect x="462" y="304" width="170" height="136" rx="10" class="claro"/>
+  <text x="478" y="330" class="t">Geração</text>
+  <text x="478" y="352" class="s">só com os trechos</text>
+  <text x="478" y="374" class="s">cita [n] em cada</text>
+  <text x="478" y="392" class="s">afirmação; senão,</text>
+  <text x="478" y="410" class="s">“Não encontrei...”</text>
+
+  <rect x="652" y="304" width="166" height="136" rx="10" class="claro"/>
+  <text x="668" y="330" class="t">Verificação</text>
+  <text x="668" y="352" class="s">trecho literal na</text>
+  <text x="668" y="370" class="s">página (RapidFuzz)</text>
+  <text x="668" y="394" class="s">sem citação válida</text>
+  <text x="668" y="412" class="s">→ recusa</text>
+
+  <path d="M232 372 H248" class="linha"/>
+  <path d="M442 372 H458" class="linha"/>
+  <path d="M632 372 H648" class="linha"/>
+  <path d="M640 216 V246 H347 V300" class="linha"/>
+  <text x="452" y="240" class="s">consulta ao índice</text>
+
+  <!-- LLM externo -->
+  <rect x="462" y="500" width="170" height="70" rx="12" class="externo"/>
+  <text x="478" y="528" class="t">Google Gemini</text>
+  <text x="478" y="550" class="s">plano gratuito · T = 0</text>
+  <path d="M547 440 V496" class="tracejada"/>
+  <path d="M556 496 V444" class="tracejada"/>
+
+  <!-- Frontend -->
+  <text x="890" y="270" class="rot">3 · FRONTEND</text>
+  <rect x="890" y="282" width="270" height="180" rx="14" class="vinho"/>
+  <text x="910" y="314" class="b">React + Vite + Tailwind</text>
+  <text x="910" y="342" fill="#f5e1e3" font-size="12.5">resposta em streaming (SSE)</text>
+  <text x="910" y="364" fill="#f5e1e3" font-size="12.5">citações [n] → painel Fontes</text>
+  <text x="910" y="386" fill="#f5e1e3" font-size="12.5">selo “Fundamentado em N trechos”</text>
+  <text x="910" y="408" fill="#f5e1e3" font-size="12.5">comparar com LLM sem RAG</text>
+  <text x="910" y="430" fill="#f5e1e3" font-size="12.5">abas Resultados e Sobre</text>
+  <path d="M840 372 H886" class="linha"/>
+  <text x="846" y="362" class="s">SSE</text>
+
+  <!-- Avaliação -->
+  <text x="890" y="112" class="rot">4 · AVALIAÇÃO</text>
+  <rect x="890" y="124" width="270" height="92" rx="12" class="caixa"/>
+  <text x="908" y="152" class="t">python -m eval.run</text>
+  <text x="908" y="174" class="s">50 perguntas × (sem RAG, com RAG)</text>
+  <text x="908" y="194" class="s">juiz: Groq (Llama, outro fornecedor)</text>
+  <path d="M1025 216 V278" class="linha"/>
+  <text x="1034" y="252" class="s">resumo.json e figuras</text>
+
+  <rect x="890" y="500" width="270" height="70" rx="12" class="externo"/>
+  <text x="908" y="528" class="t">Groq (juiz)</text>
+  <text x="908" y="550" class="s">correta / parcial / incorreta, alucinação</text>
+  <path d="M1110 216 C1190 260 1190 460 1110 496" class="tracejada"/>
+
+  <text x="40" y="616" class="s">Linhas tracejadas: serviços externos (API). O índice é gerado localmente e não vai para o git.</text>
+</svg>

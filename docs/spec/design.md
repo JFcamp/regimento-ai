@@ -314,3 +314,12 @@ React 19 + Vite 8 + TypeScript 5.9 (estrito) + Tailwind 4, fonte Inter (empacota
 - **Sobre:** metodologia, documentos (de `GET /documentos`), limitações, privacidade (não digitar dados pessoais; o plano gratuito do Gemini pode usar os dados) e aviso de que a resposta não substitui a coordenação.
 
 **Verificação:** `npm run build` (inclui `tsc --noEmit` estrito) sem erros; screenshots com Edge headless das abas Chat, Resultados e Sobre em 1366 px e do Chat na menor largura que o headless permite (492 px), sem transbordo. **Não verificado:** a tela de uma resposta real com citações (não há chave de LLM nesta máquina e o cache de sugeridas está vazio) e a largura de 390 px (o Edge headless impõe janela mínima de 492 px).
+
+## 15. Etapa 7 implementada: fechamento
+
+- **`run.ps1`** (Windows): confere Python e Node, instala o que faltar (checagem por `importlib.util.find_spec`, sem importar), avisa se não há `.env`, gera o índice se não existir (`-Reindexar` força), instala o frontend, sobe o backend (log em `data/cache/backend.log`), espera o `/health` ficar `ok`, sobe o Vite e abre o navegador (`-SemNavegador` desliga). Ctrl+C encerra os dois. Testado de ponta a ponta nesta máquina (backend e proxy do frontend respondendo com 1.374 trechos). O arquivo é gravado em UTF-8 **com BOM** e usa `$ErrorActionPreference = "Continue"`: no Windows PowerShell 5.1, sem BOM os acentos saem corrompidos, e com `Stop` qualquer aviso no stderr do Python vira erro fatal.
+- **README** em português: problema, arquitetura (figura + Mermaid), como rodar, reindexar, avaliar, resultados com o gráfico central e a tabela de métricas (medidas × pendentes), limitações, privacidade.
+- **`docs/figuras/arquitetura.svg`**: diagrama em SVG (conferido renderizado).
+- **Cortado hoje:** Docker, `docker-compose.yml` e deploy. Num deploy, o índice precisa ser gerado no build ou baixado de um artefato (ver seção 11).
+
+**Estado final desta data:** etapas 1 a 7 commitadas. Pendente só o que depende das chaves de API: rodar `python -m eval.run` completo (acurácia, alucinação, recusa correta, precisão de citação e as figuras 1 e 2), `python -m backend.build_cache` (demo offline) e a revisão humana do gabarito.

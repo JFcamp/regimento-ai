@@ -79,7 +79,7 @@ Regras de execução:
 
 ## Etapa 7 — Docker e README (R7.1, R7.2)
 
-- [ ] 7.1 Dockerfiles do backend e do frontend; `docker-compose.yml`.
-- [ ] 7.2 `README.md` em português (problema, Mermaid, rodar, reindexar, avaliar, resultados com gráfico central, limitações, aviso legal).
-- [ ] 7.3 Verificar: `docker compose up` sobe os dois serviços e o chat responde.
-- [ ] 7.4 Commit da etapa.
+- [x] 7.1 ~~Dockerfiles e docker-compose~~ cortados hoje; no lugar, `run.ps1` (Windows).
+- [x] 7.2 `README.md` em português (problema, Mermaid, rodar, reindexar, avaliar, resultados com gráfico central, limitações, aviso legal).
+- [x] 7.3 Verificar: `run.ps1` sobe os dois serviços (testado; chat com LLM pendente de chave).
+- [x] 7.4 Commit da etapa.
