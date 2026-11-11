@@ -273,3 +273,23 @@ Leitura honesta: o híbrido sobe o hit@3 de 5/7 para 6/7, mas o hit@1 cai de 4/7
 **Bloqueio registrado:** durante o desenvolvimento não havia `.env` nem variáveis `GEMINI_API_KEY`/`GROQ_API_KEY` na máquina, então os provedores foram testados com transporte HTTP simulado (retry, streaming, erros), não contra as APIs reais.
 
 **Bug corrigido (FAISS + PyMuPDF):** os dois são gerados com SWIG; se o `fitz` é importado depois do `faiss`, o `std::vector<uint8_t>` do FAISS passa a ser devolvido como `pymupdf.mupdf.vectoruc` e o `faiss.serialize_index` falha. Apareceu só na suíte completa de testes (ordem de import diferente da ingestão). O índice agora é gravado e lido com `PyCallbackIOWriter`/`PyCallbackIOReader` (bytes do Python, sem `std::vector`), com teste de regressão em subprocesso.
+
+## 12. Etapa 4 implementada: banco de avaliação
+
+`eval/perguntas.json`: 50 perguntas, todas com `revisado: false`. Cada pergunta respondível traz `documento`, `pagina` (física) e uma `evidencia` literal; `python -m eval.validar_perguntas` confere que a evidência está no texto extraído dessa página (45/45 conferidas). Perguntas com mais de uma fonte válida trazem `fontes_aceitas` (usadas no recall@3 e na precisão de citação).
+
+| Documento | Perguntas |
+|---|---|
+| Regime Didático | 8 |
+| Calendário 2026 | 6 |
+| Catálogo 2023 | 5 |
+| PPC 2022 | 5 |
+| Regulamento do TCC | 5 |
+| Atividades Complementares | 5 |
+| Extensão (Res. 6/2022) | 4 |
+| Mobilidade (Res. 8/2024) | 3 |
+| Colação 2026/1 | 2 |
+| Pós-graduação | 2 |
+| Sem resposta | 5 |
+
+Distribuição por categoria **real** (difere da meta da seção 3 dos requisitos, porque segui o conteúdo dos documentos em vez de forçar a categoria): trancamento 8, pré-requisitos 6, horas complementares/extensão 12, prazos/calendário 8, outros 16 (inclui as 5 sem resposta). Duas perguntas de conflito (`Q15`: 210 h-a × 60 h-a; `Q24`: SIN496 × SIN 494). As 5 sem resposta: cardápio do RU, nota de corte do SiSU, horário do ônibus intercampi, valor da bolsa Pibic, senha do Wi-Fi.

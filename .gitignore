@@ -38,3 +38,6 @@ rag-plantas-medicinais/
 Thumbs.db
 .vscode/
 .idea/
+
+# Arquivos temporários de trabalho
+.tmp/

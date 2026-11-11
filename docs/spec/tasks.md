@@ -52,11 +52,11 @@ Regras de execução:
 
 ## Etapa 4 — Banco de perguntas (R4.1 a R4.5)
 
-- [ ] 4.1 Redigir as 50 perguntas segundo a distribuição (45 respondíveis + 5 sem resposta), com página de origem, `revisado: false`.
-- [ ] 4.2 Marcar `conflito: true` nas perguntas sobre 210 h-a × PPC e nas de códigos de TCC.
-- [ ] 4.3 Validador (`eval/validate_perguntas.py`): 50 itens, categorias válidas, página existe no PDF, trecho do gabarito aparece na página citada.
-- [ ] 4.4 Entregar ao usuário para revisão (marcar `revisado: true` só depois).
-- [ ] 4.5 Commit da etapa.
+- [x] 4.1 Redigir as 50 perguntas segundo a distribuição (45 respondíveis + 5 sem resposta), com página de origem, `revisado: false`.
+- [x] 4.2 Marcar `conflito: true` nas perguntas sobre 210 h-a × PPC e nas de códigos de TCC.
+- [x] 4.3 Validador (`eval/validate_perguntas.py`): 50 itens, categorias válidas, página existe no PDF, trecho do gabarito aparece na página citada.
+- [ ] 4.4 (pendente: revisão humana) Entregar ao usuário para revisão (marcar `revisado: true` só depois).
+- [x] 4.5 Commit da etapa.
 
 ## Etapa 5 — Avaliação (R5.1 a R5.6)
 
