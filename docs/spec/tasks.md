@@ -69,13 +69,13 @@ Regras de execução:
 
 ## Etapa 6 — Frontend (R6.1 a R6.5)
 
-- [ ] 6.1 Scaffold Vite + React + TypeScript (estrito) + Tailwind, tokens vinho, Inter, modo escuro.
-- [ ] 6.2 Hook `useChatStream` (SSE via `fetch`) e tela de Chat com painel "Fontes", selo de confiança e sugestões.
-- [ ] 6.3 Modo "Comparar com LLM sem RAG" lado a lado.
-- [ ] 6.4 Tela Avaliação (Recharts + tabela filtrável) e tela Sobre.
-- [ ] 6.5 Responsivo, acessibilidade, estados de carregamento e erro.
-- [ ] 6.6 `npm run build` e `tsc --noEmit` sem erros; teste manual no navegador.
-- [ ] 6.7 Commit da etapa.
+- [x] 6.1 Scaffold Vite + React + TypeScript (estrito) + Tailwind, tokens vinho, Inter, modo escuro.
+- [x] 6.2 Hook `useChatStream` (SSE via `fetch`) e tela de Chat com painel "Fontes", selo de confiança e sugestões.
+- [x] 6.3 Modo "Comparar com LLM sem RAG" lado a lado.
+- [x] 6.4 Tela Resultados (figuras + números do resumo.json; tela interativa cortada) e tela Sobre.
+- [x] 6.5 Responsivo, acessibilidade, estados de carregamento e erro.
+- [x] 6.6 `npm run build` e `tsc --noEmit` sem erros; teste manual no navegador.
+- [x] 6.7 Commit da etapa.
 
 ## Etapa 7 — Docker e README (R7.1, R7.2)
 

@@ -303,3 +303,14 @@ Distribuição por categoria **real** (difere da meta da seção 3 dos requisito
 **Resultado nesta data (11/11/2026):** **recall@3 = 41/45 = 91,1% (IC 95%: 82,2% a 97,8%)**, medido de verdade com o índice e a busca híbrida. As 4 falhas: Q07 (calendário 2026/2, p. 7: recuperou a p. 4 de 2026/1, que tem o mesmo texto), Q25 e Q26 (PPC p. 21: recuperou outras páginas do PPC e o Regime Didático) e Q27 (início do período letivo, p. 3: recuperou p. 2, 5 e 9 do calendário). Padrão: o calendário repete as mesmas frases em cada semestre, e o PPC repete a mesma informação em várias páginas.
 
 **Pendente (bloqueio):** acurácia, alucinação sem × com RAG, recusa correta e precisão de citação **não foram medidas**: não há `.env` nem `GEMINI_API_KEY`/`GROQ_API_KEY` nesta máquina. O `eval.run` detecta isso e roda só a recuperação. Com as chaves no `.env`, o mesmo comando completa o experimento e gera as 3 figuras. Nenhum número dessas métricas foi estimado ou inventado.
+
+## 14. Etapa 6 implementada: frontend
+
+React 19 + Vite 8 + TypeScript 5.9 (estrito) + Tailwind 4, fonte Inter (empacotada via `@fontsource-variable/inter`, funciona offline), paleta bordô (`vinho-700 #7A1F2B`) com neutros `stone`. TypeScript 7 (port nativo) foi evitado para não arriscar o build. Abas por hash (`#chat`, `#resultados`, `#sobre`). O Vite repassa `/api/*` ao backend em `127.0.0.1:8000` (sem CORS em desenvolvimento); o host é fixado em `127.0.0.1` porque `localhost` resolve para IPv6 no Node 25.
+
+- **Chat:** streaming SSE (`fetch` + `ReadableStream`), marcadores `[n]` clicáveis (bordô = trecho confirmado, âmbar = não confirmado), painel "Fontes" com documento, página, artigo, vigência, selos PPC/pós-graduação e o trecho literal destacado; gaveta no celular. Selo "Fundamentado em N trechos" ou "Não encontrado nos documentos". Avisos de dados pessoais ocultados e de divergência entre documentos. Perguntas sugeridas vindas de `GET /sugestoes`.
+- **Comparar com LLM sem RAG:** dispara as duas chamadas em paralelo e mostra lado a lado; o lado sem RAG leva "sem fontes verificáveis".
+- **Resultados:** lê `GET /resultados` (o `resumo.json`) e as figuras de `GET /figuras/*.png`; métricas ainda não medidas aparecem como "pendente".
+- **Sobre:** metodologia, documentos (de `GET /documentos`), limitações, privacidade (não digitar dados pessoais; o plano gratuito do Gemini pode usar os dados) e aviso de que a resposta não substitui a coordenação.
+
+**Verificação:** `npm run build` (inclui `tsc --noEmit` estrito) sem erros; screenshots com Edge headless das abas Chat, Resultados e Sobre em 1366 px e do Chat na menor largura que o headless permite (492 px), sem transbordo. **Não verificado:** a tela de uma resposta real com citações (não há chave de LLM nesta máquina e o cache de sugeridas está vazio) e a largura de 390 px (o Edge headless impõe janela mínima de 492 px).

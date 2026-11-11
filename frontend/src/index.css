@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  /* Bordô da UFV com neutros */
+  --color-vinho-50: #fbf3f4;
+  --color-vinho-100: #f5e1e3;
+  --color-vinho-200: #ebc3c8;
+  --color-vinho-300: #d9959e;
+  --color-vinho-500: #a63b49;
+  --color-vinho-600: #8f2b39;
+  --color-vinho-700: #7a1f2b;
+  --color-vinho-800: #641a24;
+  --color-vinho-900: #4a141b;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-stone-50 text-stone-800 antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-vinho-600);
+  outline-offset: 2px;
+}
+
+mark {
+  @apply rounded bg-amber-100 px-0.5 text-stone-900;
+}
+
+@keyframes pisca {
+  50% {
+    opacity: 0;
+  }
+}
+.cursor-stream::after {
+  content: "▍";
+  margin-left: 1px;
+  color: var(--color-vinho-600);
+  animation: pisca 1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-stream::after {
+    animation: none;
+  }
+}
