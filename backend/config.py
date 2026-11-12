@@ -47,11 +47,11 @@ class Settings(BaseSettings):
     max_output_tokens: int = 700
 
     gemini_api_key: SecretStr | None = None
-    gemini_model: str = "gemini-flash-latest"  # confirme com: python -m backend.listar_modelos
+    gemini_model: str = "gemini-3.5-flash-lite"  # confirme com: python -m backend.listar_modelos
     gemini_rpm: int = 10  # pedidos por minuto (plano gratuito); 0 desliga o espaçamento
 
     groq_api_key: SecretStr | None = None
-    groq_model: str = "llama-3.3-70b-versatile"  # confirme com: python -m backend.listar_modelos
+    groq_model: str = "openai/gpt-oss-120b"  # confirme com: python -m backend.listar_modelos
     groq_rpm: int = 25
 
     openai_api_key: SecretStr | None = None

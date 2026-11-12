@@ -105,7 +105,7 @@
   <rect x="890" y="124" width="270" height="92" rx="12" class="caixa"/>
   <text x="908" y="152" class="t">python -m eval.run</text>
   <text x="908" y="174" class="s">50 perguntas × (sem RAG, com RAG)</text>
-  <text x="908" y="194" class="s">juiz: Groq (Llama, outro fornecedor)</text>
+  <text x="908" y="194" class="s">juiz: Groq (gpt-oss-120b, outro fornecedor)</text>
   <path d="M1025 216 V278" class="linha"/>
   <text x="1034" y="252" class="s">resumo.json e figuras</text>
 

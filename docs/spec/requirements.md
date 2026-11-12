@@ -208,3 +208,5 @@ Exemplos de perguntas sem resposta nos documentos: valor da taxa de inscrição 
 8. **Fluxo:** um commit por etapa, push ao final de cada uma.
 
 9. **Revisão do plano (Etapa 3 em diante):** modelo avaliado e do chat = Google Gemini (plano gratuito, temperatura 0); juiz = Groq (Llama grande). Substitui o item 6 acima (`gpt-4o-mini` e juiz Anthropic). Cortes de escopo: deploy online, Docker, provedores openai/anthropic/local, calibração fina de `MIN_SCORE`, testes `slow` e tela de avaliação interativa. Detalhes em `design.md`, seção 11.
+
+10. **Modelos efetivamente usados (12/11/2026):** avaliado `gemini-3.5-flash-lite` (o Flash tem cota diária baixa no plano gratuito); juiz `openai/gpt-oss-120b` no Groq, porque a conta não tem Llama grande de chat. Resultados em `design.md`, seção 16.

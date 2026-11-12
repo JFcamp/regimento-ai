@@ -58,15 +58,38 @@ def _frases_com_citacao(resposta: str) -> list[tuple[str, list[int]]]:
     return saida
 
 
+_PALAVRA_RE = re.compile(r"\S+")
+JANELA_PALAVRAS = 30  # para trechos sem pontuação (tabelas do catálogo e do calendário)
+PASSO_PALAVRAS = 10
+
+
+def _janelas_de_palavras(texto: str, ini: int, fim: int) -> list[tuple[int, int]]:
+    palavras = [(ini + m.start(), ini + m.end()) for m in _PALAVRA_RE.finditer(texto[ini:fim])]
+    if not palavras:
+        return []
+    saida = []
+    for i in range(0, max(len(palavras) - JANELA_PALAVRAS, 0) + 1, PASSO_PALAVRAS):
+        bloco = palavras[i : i + JANELA_PALAVRAS]
+        saida.append((bloco[0][0], bloco[-1][1]))
+    if saida[-1][1] != palavras[-1][1]:  # cobre o fim do trecho
+        bloco = palavras[-JANELA_PALAVRAS:]
+        saida.append((bloco[0][0], bloco[-1][1]))
+    return saida
+
+
 def _janelas(texto: str) -> list[tuple[int, int]]:
-    """Janelas (início, fim) de 1 a 2 sentenças consecutivas; sempre substrings exatas do texto."""
+    """Janelas (início, fim) que são sempre substrings exatas do texto: 1 a 2 sentenças consecutivas e, para
+    sentenças longas demais (tabelas sem pontuação), janelas deslizantes de palavras."""
     sentencas = [(m.start(), m.end()) for m in _SENTENCA_RE.finditer(texto) if m.group(0).strip()]
     janelas = []
     for i, (ini, fim) in enumerate(sentencas):
+        if fim - ini > MAX_JANELA:
+            janelas.extend(_janelas_de_palavras(texto, ini, fim))
+            continue
         janelas.append((ini, fim))
-        if i + 1 < len(sentencas):
+        if i + 1 < len(sentencas) and sentencas[i + 1][1] - ini <= MAX_JANELA:
             janelas.append((ini, sentencas[i + 1][1]))
-    return [(a, b) for a, b in janelas if b - a <= MAX_JANELA] or [(0, min(len(texto), MAX_JANELA))]
+    return janelas or [(0, min(len(texto), MAX_JANELA))]
 
 
 def melhor_trecho(frase: str, texto_pagina: str) -> tuple[str, float]:

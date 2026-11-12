@@ -82,6 +82,15 @@ def test_citacao_sem_suporte_e_invalida() -> None:
     assert not c.valida
 
 
+def test_citacao_em_tabela_sem_pontuacao() -> None:
+    # Regressão: no catálogo (tabela), a "frase" passa de 420 caracteres e a citação era rejeitada
+    linhas = " ".join(f"SIN {100 + i} Disciplina número {i} 4(4-0) 60 SIN {90 + i} I e II" for i in range(40))
+    tabela = linhas + " SIN 211 Algoritmos e Estruturas de Dados 6(4-2) 90 SIN 110 I e II " + linhas
+    (c,) = verificar("O pré-requisito de Algoritmos e Estruturas de Dados (SIN 211) é SIN 110 [1].", [_pag(1, tabela)])
+    assert c.valida and "SIN 211 Algoritmos e Estruturas de Dados" in c.trecho_literal
+    assert c.trecho_literal in tabela and len(c.trecho_literal) < 400
+
+
 def test_marcador_inexistente_e_descartado() -> None:
     assert verificar("São 210 horas/aula [7].", [_pag(1, PAGINA_AC)]) == []
 
@@ -143,6 +152,51 @@ def test_429_persistente_vira_erro_limite_de_uso_sem_vazar_a_chave() -> None:
     with pytest.raises(ErroProvedor) as e:
         asyncio.run(prov.completar("s", "u"))
     assert e.value.codigo == "limite_de_uso" and "CHAVE-SECRETA" not in e.value.mensagem
+
+
+def test_cota_diaria_para_na_hora_e_informa_o_limite() -> None:
+    corpo = {"error": {"code": 429, "message": "quota", "details": [
+        {"@type": "type.googleapis.com/google.rpc.QuotaFailure",
+         "violations": [{"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier", "quotaValue": "500"}]},
+        {"@type": "type.googleapis.com/google.rpc.RetryInfo", "retryDelay": "40s"}]}}
+    n = []
+
+    def handler(r: httpx.Request) -> httpx.Response:
+        n.append(1)
+        return httpx.Response(429, json=corpo)
+
+    prov = Gemini("m", "CHAVE-SECRETA-123", _settings(), 0, _cliente(handler))
+    with pytest.raises(ErroProvedor) as e:
+        asyncio.run(prov.completar("s", "u"))
+    assert len(n) == 1 and e.value.codigo == "limite_de_uso"
+    assert "PerDay" in e.value.mensagem and "500" in e.value.mensagem and "CHAVE" not in e.value.mensagem
+
+
+def test_cota_por_minuto_espera_o_retry_delay() -> None:
+    corpo = {"error": {"details": [{"violations": [{"quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"}]},
+                                   {"retryDelay": "7s"}]}}
+    chamadas, esperas = [], []
+
+    def handler(r: httpx.Request) -> httpx.Response:
+        chamadas.append(1)
+        return httpx.Response(429, json=corpo) if len(chamadas) == 1 else httpx.Response(200, content=_sse_gemini("ok"))
+
+    async def sleep(s: float) -> None:
+        esperas.append(s)
+
+    prov = Gemini("m", "K", _settings(), 0, _cliente(handler), sleep)
+    assert asyncio.run(prov.completar("s", "u")) == "ok" and esperas == [8.0]
+
+
+def test_gpt_oss_recebe_raciocinio_baixo() -> None:
+    corpos = []
+
+    def handler(r: httpx.Request) -> httpx.Response:
+        corpos.append(json.loads(r.content))
+        return httpx.Response(200, content=b"data: [DONE]\n\n")
+
+    asyncio.run(Groq("openai/gpt-oss-120b", "K", _settings(), 0, _cliente(handler)).completar("s", "u", max_tokens=100))
+    assert corpos[0]["reasoning_effort"] == "low" and corpos[0]["max_tokens"] == 1024
 
 
 def test_erro_4xx_nao_faz_retry() -> None:

@@ -55,14 +55,23 @@ def fig_alucinacao(resumo: dict, pasta: Path) -> list[Path]:
         d = resumo["modos"][m]
         v, (lo, hi) = d["taxa_alucinacao"], d["taxa_alucinacao_ic95"]
         ax.bar(i, v, color=COR_MODO[m], width=0.55, yerr=[[v - lo], [hi - v]], capsize=8, ecolor=TEXTO)
-        ax.text(i, hi + 0.03, _pct(v), ha="center", va="bottom", fontweight="bold", color=TEXTO)
+        wl = d.get("taxa_alucinacao_ic95_wilson")
+        topo = max(hi, wl[1] if wl else hi)
+        ax.text(i, topo + 0.03, f"{_pct(v)} ({d.get('alucinacoes', '?')}/{d['n_julgadas']})", ha="center",
+                va="bottom", fontweight="bold", color=TEXTO)
+        if wl:
+            ax.text(i, topo + 0.10, f"Wilson: {_pct(wl[0])}–{_pct(wl[1])}", ha="center", va="bottom", fontsize=8,
+                    color="#6B7280")
     ax.set_xticks(range(len(modos)), [ROTULO_MODO[m] for m in modos])
     ax.set_ylim(0, 1.05)
     ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
     ax.set_ylabel("Respostas com alucinação")
-    ax.set_title("Taxa de alucinação (IC 95%, bootstrap)")
+    ax.set_title("Taxa de alucinação (barras de erro: IC 95% bootstrap)")
     n = resumo["modos"][modos[0]]["n_julgadas"]
-    fig.text(0.01, -0.03, f"n = {n} perguntas por modo · mesmo LLM, temperatura 0 · gabarito preliminar", fontsize=8, color="#6B7280")
+    modelo = resumo.get("config", {}).get("modelo", "")
+    fig.text(0.01, -0.06, f"n = {n} perguntas por modo · mesmo LLM ({modelo}), temperatura 0 · juiz de outro fornecedor\n"
+             "Perto de 0%, o bootstrap subestima a incerteza; o IC de Wilson complementa · gabarito ainda não revisado",
+             fontsize=8, color="#6B7280")
     return _salvar(fig, "alucinacao_sem_vs_com_rag", pasta)
 
 
@@ -81,11 +90,13 @@ def fig_acuracia_categoria(resumo: dict, pasta: Path) -> list[Path]:
             ax.text(b.get_x() + b.get_width() / 2, v + 0.02, _pct(v), ha="center", fontsize=8, color=TEXTO)
     rot = [f"{ROTULO_CATEGORIA[c]}\n(n={resumo['por_categoria'][c].get('rag', {}).get('n', 0)})" for c in cats]
     ax.set_xticks(range(len(cats)), rot, fontsize=9)
-    ax.set_ylim(0, 1.12)
+    ax.set_ylim(0, 1.1)
+    ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
     ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
     ax.set_ylabel("Acurácia (correta = 1, parcial = 0,5)")
-    ax.set_title("Acurácia por categoria")
-    ax.legend(frameon=False, loc="upper left", ncols=2)
+    ax.set_title("Acurácia por categoria", pad=34)
+    # legenda acima do gráfico, para não cobrir os rótulos de 100%
+    ax.legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncols=2)
     return _salvar(fig, "acuracia_por_categoria", pasta)
 
 
@@ -111,9 +122,11 @@ def fig_citacao_recall(resumo: dict, pasta: Path) -> list[Path]:
     ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
     ax.set_title("Recuperação e citações (com RAG)")
     nota = f"n = {rec['n']} perguntas respondíveis · busca híbrida BM25 + e5, páginas inteiras"
+    if cit and cit.get("total"):
+        nota += f" · {cit['total']} citações"
     if len(barras) == 1:
         nota += " · precisão de citação: pendente"
-    fig.text(0.01, -0.04, nota, fontsize=8, color="#6B7280")
+    fig.text(0.01, -0.08, nota, fontsize=8, color="#6B7280")
     return _salvar(fig, "citacao_e_recall", pasta)
 
 

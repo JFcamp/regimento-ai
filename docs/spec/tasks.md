@@ -63,7 +63,7 @@ Regras de execução:
 - [x] 5.1 `judge_prompt_v1.md` e `metrics.py` (veredito, alucinação, recusa, precisão de citação, bootstrap 10.000).
 - [x] 5.2 `eval/run.py`: dois modos, mesmo LLM, `temperature=0`, CSV e `resumo.json`.
 - [x] 5.3 `plots.py`: 3 figuras PNG 300 dpi + SVG, rótulos em português, em `docs/figuras/`.
-- [ ] 5.4 (pendente: chaves de API) Rodar a avaliação (precisa do provedor definido) e conferir 10 veredictos do juiz à mão.
+- [x] 5.4 Rodar a avaliação (precisa do provedor definido) e conferir 10 veredictos do juiz à mão.
 - [x] 5.5 Verificar: um único comando gera CSV, `resumo.json` e as 3 figuras (critério de aceite 2).
 - [ ] 5.6 Commit da etapa.
 

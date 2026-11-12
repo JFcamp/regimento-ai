@@ -126,6 +126,15 @@ def test_julgamento_por_regra_e_parse() -> None:
     assert parse_julgamento('{"veredito": "talvez", "alucinou": false}') is None
 
 
+def test_wilson() -> None:
+    from eval.metricas import wilson_ic
+
+    lo, hi = wilson_ic(0, 50)
+    assert lo == 0.0 and 0.07 < hi < 0.072  # limite superior conhecido para 0/50
+    lo, hi = wilson_ic(27, 50)
+    assert lo < 0.54 < hi and wilson_ic(0, 0) is None
+
+
 def test_recall_e_bootstrap() -> None:
     p = {**PERGUNTAS[0], "fontes_aceitas": [{"documento": "ppc", "pagina": 18}]}
     assert recall_at_3(p, [["x", 1], ["ppc", 18]]) is True

@@ -1,0 +1,414 @@
+{
+ "versao": 1,
+ "meta": {
+  "gerado_em": "2026-11-12",
+  "provedor": "gemini",
+  "modelo": "gemini-3.5-flash-lite"
+ },
+ "entradas": {
+  "quantas vezes posso trancar a matricula na graduacao": {
+   "pergunta": "Quantas vezes posso trancar a matrícula na graduação?",
+   "resposta": "O trancamento de matrícula poderá ser concedido até três vezes para os cursos superiores de tecnologia, ou até cinco vezes para os demais cursos de graduação [1].",
+   "citacoes": [
+    {
+     "id": 1,
+     "documento": "res-cepe-30-2026-regime-didatico",
+     "titulo": "Resolução CEPE/UFV nº 30/2026 - Regime Didático dos cursos de graduação",
+     "vigencia": "2026-04-23",
+     "escopo": "graduacao",
+     "hierarquia": "norma",
+     "pagina": 16,
+     "artigo": "Art. 80",
+     "trecho_literal": "O estudante poderá solicitar ao Registro Escolar o trancamento de sua matrícula, nos prazos estabelecidos no Calendário Escolar.\n§ 1º O trancamento de matrícula será válido por um período letivo e poderá ser concedido até três vezes, para os cursos superiores de tecnologia, ou até cinco vezes, para os demais cursos de graduação.",
+     "score": 0.03279,
+     "suporte": 92.4,
+     "valida": true
+    }
+   ],
+   "fim": {
+    "modo": "rag",
+    "recusa": false,
+    "motivo": null,
+    "n_trechos": 1,
+    "paginas": [
+     {
+      "id": 1,
+      "documento": "res-cepe-30-2026-regime-didatico",
+      "pagina": 16,
+      "artigo": "Art. 80"
+     },
+     {
+      "id": 2,
+      "documento": "res-cepe-30-2026-regime-didatico",
+      "pagina": 12,
+      "artigo": "Art. 54"
+     },
+     {
+      "id": 3,
+      "documento": "res-cepe-30-2026-regime-didatico",
+      "pagina": 24,
+      "artigo": "Art. 96"
+     }
+    ],
+    "divergencia": false
+   }
+  },
+  "qual a carga horaria de atividades complementares exigida no curso": {
+   "pergunta": "Qual a carga horária de atividades complementares exigida no curso?",
+   "resposta": "Conforme o Regulamento das Atividades Complementares de Sistemas de Informação (UFV-CRP) com vigência em 2021, o cumprimento da carga horária de 210 horas/aula é requisito indispensável para a integralização curricular e conclusão da graduação [1]. A resposta não substitui a coordenação do curso.",
+   "citacoes": [
+    {
+     "id": 1,
+     "documento": "regulamento-atividades-complementares-si",
+     "titulo": "Regulamento das Atividades Complementares de Sistemas de Informação (UFV-CRP)",
+     "vigencia": "2021",
+     "escopo": "curso-si",
+     "hierarquia": "norma",
+     "pagina": 2,
+     "artigo": "Art. 4",
+     "trecho_literal": "Art 4º - O cumprimento da carga horária de 210 horas/aula como atividades acadêmicas curriculares complementares é requisito indispensável à integralização curricular do curso de Bacharelado em Sistemas de Informação, sem o que não será concluída a graduação.",
+     "score": 0.03226,
+     "suporte": 79.8,
+     "valida": true
+    }
+   ],
+   "fim": {
+    "modo": "rag",
+    "recusa": false,
+    "motivo": null,
+    "n_trechos": 1,
+    "paginas": [
+     {
+      "id": 1,
+      "documento": "regulamento-atividades-complementares-si",
+      "pagina": 2,
+      "artigo": "Art. 5"
+     },
+     {
+      "id": 2,
+      "documento": "regulamento-atividades-complementares-si",
+      "pagina": 4,
+      "artigo": "Art. 5"
+     },
+     {
+      "id": 3,
+      "documento": "ppc-si-2022",
+      "pagina": 210,
+      "artigo": "Art. 12"
+     }
+    ],
+    "divergencia": false
+   }
+  },
+  "quantas horas de monitoria contam como atividade complementar": {
+   "pergunta": "Quantas horas de monitoria contam como atividade complementar?",
+   "resposta": "Cada semestre letivo de monitoria confere 30 h-a, com um limite máximo de 60 h-a [1]. Esta resposta não substitui a coordenação do curso.",
+   "citacoes": [
+    {
+     "id": 1,
+     "documento": "regulamento-atividades-complementares-si",
+     "titulo": "Regulamento das Atividades Complementares de Sistemas de Informação (UFV-CRP)",
+     "vigencia": "2021",
+     "escopo": "curso-si",
+     "hierarquia": "norma",
+     "pagina": 4,
+     "artigo": "Art. 5",
+     "trecho_literal": "Máximo 90 h-a Monitoria - Apresentação de certidão ou documento comprobatório da atividade e da carga horária. 30 h-a por cada semestre letivo de monitoria Máximo 60 h-a Atividade de iniciação científica - Apresentação de documento comprobatório da atividade e da carga horária.",
+     "score": 0.03202,
+     "suporte": 77.5,
+     "valida": true
+    }
+   ],
+   "fim": {
+    "modo": "rag",
+    "recusa": false,
+    "motivo": null,
+    "n_trechos": 1,
+    "paginas": [
+     {
+      "id": 1,
+      "documento": "regulamento-atividades-complementares-si",
+      "pagina": 4,
+      "artigo": "Art. 5"
+     },
+     {
+      "id": 2,
+      "documento": "regulamento-atividades-complementares-si",
+      "pagina": 5,
+      "artigo": "Art. 7"
+     },
+     {
+      "id": 3,
+      "documento": "ppc-si-2022",
+      "pagina": 26,
+      "artigo": null
+     }
+    ],
+    "divergencia": true
+   }
+  },
+  "qual o percentual minimo de extensao na carga horaria do curso": {
+   "pergunta": "Qual o percentual mínimo de extensão na carga horária do curso?",
+   "resposta": "O percentual mínimo de extensão na carga horária total dos cursos de graduação da UFV é de dez por cento [2].",
+   "citacoes": [
+    {
+     "id": 2,
+     "documento": "res-cepe-6-2022-extensao",
+     "titulo": "Resolução CEPE nº 6/2022 - Creditação curricular das atividades de extensão",
+     "vigencia": "2022-04-01",
+     "escopo": "graduacao",
+     "hierarquia": "norma",
+     "pagina": 3,
+     "artigo": "Art. 8",
+     "trecho_literal": "Art. 82 As atividades de extensdo, em suas variadas formas, deverdo fazer parte dos curriculos de todos os cursos de graduagdo da UFV, com percentual minimo de dez por cento da carga horéria total.",
+     "score": 0.02976,
+     "suporte": 70.1,
+     "valida": true
+    }
+   ],
+   "fim": {
+    "modo": "rag",
+    "recusa": false,
+    "motivo": null,
+    "n_trechos": 1,
+    "paginas": [
+     {
+      "id": 1,
+      "documento": "res-cepe-30-2026-regime-didatico",
+      "pagina": 15,
+      "artigo": "Art. 74"
+     },
+     {
+      "id": 2,
+      "documento": "res-cepe-6-2022-extensao",
+      "pagina": 3,
+      "artigo": "Art. 9"
+     },
+     {
+      "id": 3,
+      "documento": "regulamento-atividades-complementares-si",
+      "pagina": 2,
+      "artigo": "Art. 5"
+     }
+    ],
+    "divergencia": false
+   }
+  },
+  "por quantos periodos posso fazer mobilidade academica": {
+   "pergunta": "Por quantos períodos posso fazer mobilidade acadêmica?",
+   "resposta": "O estudante pode receber conceito de afastamento para Mobilidade Acadêmica por, no máximo, 3 períodos letivos, consecutivos ou não, exceto para Mobilidade Acadêmica Intercampi [1]. Para a modalidade Intercampi, estudantes de cursos superiores tecnológicos podem cursar no máximo 2 períodos letivos, e os demais cursos superiores até 4 períodos, consecutivos ou não, em outros campi da UFV [3]. Na Mobilidade Acadêmica Nacional, o prazo máximo de afastamento é de dois períodos letivos, podendo ser prorrogado por mais um período em caráter excepcional [3]. Na Mobilidade Acadêmica Internacional, o prazo máximo de afastamento é de três períodos letivos [3]. Cada período afastado para Mobilidade Acadêmica será considerado um período letivo cursado [2].",
+   "citacoes": [
+    {
+     "id": 1,
+     "documento": "res-cepe-8-2024-mobilidade",
+     "titulo": "Resolução CEPE/UFV nº 8/2024 - Mobilidade Acadêmica da graduação",
+     "vigencia": "2024-09-11",
+     "escopo": "graduacao",
+     "hierarquia": "norma",
+     "pagina": 2,
+     "artigo": "Art. 5",
+     "trecho_literal": "Art. 5º O estudante poderá receber conceito de afastamento para Mobilidade Acadêmica por, no máximo, 3 (três) períodos letivos, consecutivos ou não, exceto quando se trata de afastamento para Mobilidade Acadêmica Intercampi.",
+     "score": 0.03227,
+     "suporte": 93.7,
+     "valida": true
+    },
+    {
+     "id": 2,
+     "documento": "res-cepe-8-2024-mobilidade",
+     "titulo": "Resolução CEPE/UFV nº 8/2024 - Mobilidade Acadêmica da graduação",
+     "vigencia": "2024-09-11",
+     "escopo": "graduacao",
+     "hierarquia": "norma",
+     "pagina": 5,
+     "artigo": "Art. 31",
+     "trecho_literal": "31. Cada período afastado para Mobilidade Acadêmica será considerado um período letivo cursado pelo estudante.",
+     "score": 0.03132,
+     "suporte": 98.8,
+     "valida": true
+    },
+    {
+     "id": 3,
+     "documento": "res-cepe-8-2024-mobilidade",
+     "titulo": "Resolução CEPE/UFV nº 8/2024 - Mobilidade Acadêmica da graduação",
+     "vigencia": "2024-09-11",
+     "escopo": "graduacao",
+     "hierarquia": "norma",
+     "pagina": 3,
+     "artigo": "Art. 17",
+     "trecho_literal": "O prazo máximo de afastamento é de três períodos letivos.",
+     "score": 0.03102,
+     "suporte": 90.9,
+     "valida": true
+    }
+   ],
+   "fim": {
+    "modo": "rag",
+    "recusa": false,
+    "motivo": null,
+    "n_trechos": 3,
+    "paginas": [
+     {
+      "id": 1,
+      "documento": "res-cepe-8-2024-mobilidade",
+      "pagina": 2,
+      "artigo": "Art. 5"
+     },
+     {
+      "id": 2,
+      "documento": "res-cepe-8-2024-mobilidade",
+      "pagina": 5,
+      "artigo": "Art. 31"
+     },
+     {
+      "id": 3,
+      "documento": "res-cepe-8-2024-mobilidade",
+      "pagina": 3,
+      "artigo": "Art. 7"
+     }
+    ],
+    "divergencia": false
+   }
+  },
+  "quando e onde sera a colacao de grau de 2026/1": {
+   "pergunta": "Quando e onde será a colação de grau de 2026/1?",
+   "resposta": "A Cerimônia de Colação de Grau de 2026/1 será realizada no dia 31 de julho de 2026, em sessão única, com início às 18 horas [2]. O evento ocorrerá no Espaço Multiuso do Campus Rio Paranaíba [2]. A resposta não substitui a coordenação do curso.",
+   "citacoes": [
+    {
+     "id": 2,
+     "documento": "orientacoes-colacao-grau-2026-1",
+     "titulo": "Orientações para a colação de grau 2026/1 (Diretoria de Ensino, UFV-CRP)",
+     "vigencia": "2026",
+     "escopo": "curso-si",
+     "hierarquia": "norma",
+     "pagina": 1,
+     "artigo": null,
+     "trecho_literal": "A UFV-CRP sente-se honrada de ter participado dessa caminhada e contribuído para a formação de cada um de vocês durante o tempo de curso. * A Cerimônia de Colação de Grau será realizada no dia 31 de julho de 2026, em sessão única, com início às 18 horas no Espaço Multiuso do Campus Rio Paranaíba.",
+     "score": 0.03227,
+     "suporte": 95.9,
+     "valida": true
+    }
+   ],
+   "fim": {
+    "modo": "rag",
+    "recusa": false,
+    "motivo": null,
+    "n_trechos": 1,
+    "paginas": [
+     {
+      "id": 1,
+      "documento": "res-cepe-30-2026-regime-didatico",
+      "pagina": 25,
+      "artigo": "Art. 100"
+     },
+     {
+      "id": 2,
+      "documento": "orientacoes-colacao-grau-2026-1",
+      "pagina": 1,
+      "artigo": null
+     },
+     {
+      "id": 3,
+      "documento": "res-cepe-24-2025-calendario",
+      "pagina": 9,
+      "artigo": "Art. 2"
+     }
+    ],
+    "divergencia": false
+   }
+  },
+  "qual a frequencia minima para ser aprovado em uma disciplina": {
+   "pergunta": "Qual a frequência mínima para ser aprovado em uma disciplina?",
+   "resposta": "Para ser aprovado em uma disciplina, a frequência mínima exigida é de 75% (setenta e cinco por cento) das horas-aula de atividades didáticas teóricas ou práticas [3].",
+   "citacoes": [
+    {
+     "id": 3,
+     "documento": "res-cepe-30-2026-regime-didatico",
+     "titulo": "Resolução CEPE/UFV nº 30/2026 - Regime Didático dos cursos de graduação",
+     "vigencia": "2026-04-23",
+     "escopo": "graduacao",
+     "hierarquia": "norma",
+     "pagina": 21,
+     "artigo": "Art. 90",
+     "trecho_literal": "II - comparecer a menos de 75% (setenta e cinco por cento) das horas-aula de atividades didáticas teóricas ou práticas; ou",
+     "score": 0.03068,
+     "suporte": 84.0,
+     "valida": true
+    }
+   ],
+   "fim": {
+    "modo": "rag",
+    "recusa": false,
+    "motivo": null,
+    "n_trechos": 1,
+    "paginas": [
+     {
+      "id": 1,
+      "documento": "res-cepe-30-2026-regime-didatico",
+      "pagina": 20,
+      "artigo": "Art. 88"
+     },
+     {
+      "id": 2,
+      "documento": "regulamento-tcc-si",
+      "pagina": 5,
+      "artigo": "Art. 17"
+     },
+     {
+      "id": 3,
+      "documento": "res-cepe-30-2026-regime-didatico",
+      "pagina": 21,
+      "artigo": "Art. 90"
+     }
+    ],
+    "divergencia": false
+   }
+  },
+  "quando comecam as aulas do primeiro semestre de 2026": {
+   "pergunta": "Quando começam as aulas do primeiro semestre de 2026?",
+   "resposta": "As aulas do primeiro semestre de 2026 iniciam-se em 09 de março de 2026, segunda-feira [3].",
+   "citacoes": [
+    {
+     "id": 3,
+     "documento": "res-cepe-24-2025-calendario",
+     "titulo": "Resolução CEPE/UFV nº 24/2025 - Calendário escolar 2026/1 e 2026/2 (texto consolidado)",
+     "vigencia": "2025-11-10",
+     "escopo": "graduacao",
+     "hierarquia": "norma",
+     "pagina": 3,
+     "artigo": "Art. 2",
+     "trecho_literal": "09 segunda-feira Início das aulas.",
+     "score": 0.02501,
+     "suporte": 64.0,
+     "valida": true
+    }
+   ],
+   "fim": {
+    "modo": "rag",
+    "recusa": false,
+    "motivo": null,
+    "n_trechos": 1,
+    "paginas": [
+     {
+      "id": 1,
+      "documento": "res-cepe-30-2026-regime-didatico",
+      "pagina": 13,
+      "artigo": "Art. 63"
+     },
+     {
+      "id": 2,
+      "documento": "res-cepe-30-2026-regime-didatico",
+      "pagina": 4,
+      "artigo": "Art. 12"
+     },
+     {
+      "id": 3,
+      "documento": "res-cepe-24-2025-calendario",
+      "pagina": 3,
+      "artigo": "Art. 2"
+     }
+    ],
+    "divergencia": false
+   }
+  }
+ }
+}

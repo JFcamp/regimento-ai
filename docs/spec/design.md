@@ -323,3 +323,37 @@ React 19 + Vite 8 + TypeScript 5.9 (estrito) + Tailwind 4, fonte Inter (empacota
 - **Cortado hoje:** Docker, `docker-compose.yml` e deploy. Num deploy, o índice precisa ser gerado no build ou baixado de um artefato (ver seção 11).
 
 **Estado final desta data:** etapas 1 a 7 commitadas. Pendente só o que depende das chaves de API: rodar `python -m eval.run` completo (acurácia, alucinação, recusa correta, precisão de citação e as figuras 1 e 2), `python -m backend.build_cache` (demo offline) e a revisão humana do gabarito.
+
+## 16. Resultados do experimento (11 e 12/11/2026)
+
+> **Gabarito ainda não revisado por humano** (`revisado: false` nas 50 perguntas). Números preliminares.
+
+**Configuração.** Modelo avaliado e do chat: `gemini-3.5-flash-lite` (plano gratuito, temperatura 0), o mesmo nos dois modos. A lista de modelos da chave incluía Flash 3.5 a 3.8, mas, segundo a fonte pública mais recente consultada, os Flash "cheios" têm ~20 pedidos/dia no plano gratuito, contra ~500 dos Flash-Lite. Pela regra combinada (Flash com menos de ~150 pedidos/dia → Flash-Lite), ficou o Flash-Lite. O experimento usou ~150 chamadas ao Gemini sem bater em cota. Juiz: **`openai/gpt-oss-120b` no Groq**. A conta **não tem Llama grande de chat** (só `llama-prompt-guard`), então foi usado o maior modelo aberto disponível, também de outro fornecedor que não o Google. Ele recebe `reasoning_effort=low`. Embeddings `multilingual-e5-base`, busca híbrida, 3 páginas inteiras, prompt `v1`, prompt do juiz `v1`, verificador de citações `v2`.
+
+| Métrica | Sem RAG | Com RAG |
+|---|---|---|
+| Alucinação (n = 50) | 54% (27/50) · bootstrap 40%–68% · Wilson 40,4%–67,0% | 2% (1/50) · bootstrap 0%–6% · Wilson 0,4%–10,5% |
+| Acurácia (45 respondíveis; correta = 1, parcial = 0,5) | 33,3% · IC 22,2%–45,6% | 85,6% · IC 75,6%–94,4% |
+| Acurácia estrita | 22,2% (10/45) | 80,0% (36/45) |
+| Vereditos (respondíveis) | 10 corretas, 10 parciais, 25 incorretas | 36 corretas, 5 parciais, 4 incorretas |
+| Recusa correta (5 sem resposta) | 0/5 | 5/5 |
+| Recusa indevida | 0/45 | 3/45 (Q07, Q26, Q27) |
+| Recall@3 | — | 91,1% (41/45) · IC 82,2%–97,8% |
+| Precisão de citação (válida e na página do gabarito) | — | 87,2% (41/47) |
+| Trecho literal confirmado | — | 100% (47/47) |
+| Respostas com ≥ 1 citação na página certa | — | 97,6% (41/42) |
+
+Acurácia por categoria (sem → com RAG): trancamento 25% → 81%; pré-requisitos 42% → 100%; horas complementares/extensão 33% → 83%; prazos/calendário 6% → 81%; outros 55% → 86%.
+
+**Análise.**
+- As 3 recusas indevidas com RAG são falhas de recuperação (a página com a resposta não entrou no contexto), não do modelo.
+- A única alucinação com RAG (Q37) parece **falso positivo do juiz**: os números da resposta estão nas páginas citadas, mas o gabarito só traz o limite geral. Foi mantida como veio do juiz e marcada para revisão humana.
+- A precisão de citação é **conservadora**: 6 citações válidas apontam páginas fora de `fontes_aceitas`, e parte delas tem o mesmo conteúdo (o PPC repete a tabela do catálogo e as cargas horárias).
+- Conflitos (Q15, Q24): parciais. O modelo citou a norma específica e não apontou a divergência, porque a página do PPC com o outro valor não entrou no contexto. Melhoria futura: quando uma norma de atividades complementares ou extensão é recuperada, trazer também o trecho correspondente do PPC.
+- Teste real fora do banco ("Até quando posso trancar a matrícula em 2026/1?"): com RAG, resposta correta mas genérica (citou o Art. 80, sem a página do calendário com as datas); sem RAG, inventou "até a metade do semestre" e um sistema "UFVNet".
+
+**Bug encontrado e corrigido durante o experimento (verificador `v1` → `v2`).** Na 1ª execução, Q09, Q10 e Q11 (pré-requisitos) foram respondidas pelo modelo, mas o verificador **rejeitou as citações e trocou as respostas pela recusa**. O catálogo é uma tabela sem pontuação, cada "frase" passava de 420 caracteres e todas as janelas eram descartadas. O `v2` usa janelas deslizantes de 30 palavras nesses casos (teste de regressão incluído). O **modo com RAG foi refeito por inteiro** com o `v2` (`python -m eval.run --refazer-modo rag`). O modo sem RAG não usa o verificador e foi mantido. Números da 1ª execução (`v1`), para registro: com RAG, acurácia 83,3%, alucinação 0/50, 6 recusas indevidas (3 delas causadas pelo bug), recusa correta 5/5. Sem RAG: idêntico ao final.
+
+**Limites do plano gratuito encontrados.** Groq (`gpt-oss-120b`): 8.000 tokens/minuto e **200.000 tokens/dia**. O julgamento do modo com RAG envia as 3 páginas do contexto, e a cota diária foi praticamente esgotada. Ajustes: trechos para o juiz limitados a 14.000 caracteres, saída reservada de 1.024 tokens, cota diária detectada pelo corpo do 429 (para na hora, sem retentativas inúteis) e, com o juiz no limite, o `eval.run` continua julgando por regra o que não precisa de API. As 2 últimas perguntas que dependiam do juiz foram concluídas depois que a janela móvel liberou tokens.
+
+**Demo offline.** `data/cache/sugeridas.json` tem as respostas reais das 8 perguntas sugeridas, todas com citação válida. Verificado pela tela do chat (screenshot `docs/figuras/tela_chat.png`, gerado com `?q=` na URL).

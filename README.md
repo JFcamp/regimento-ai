@@ -52,7 +52,11 @@ O `run.ps1` instala o que faltar, gera o índice na primeira vez (cerca de 20 mi
 
 Sem `.env`, a interface abre, mas o chat só responde as perguntas sugeridas que estiverem em `data/cache/sugeridas.json` (modo demonstração). Para gerar esse cache com respostas reais: `python -m backend.build_cache`.
 
-Para ver os modelos que suas chaves enxergam no plano gratuito: `python -m backend.listar_modelos` (os nomes mudam com frequência; ajuste `GEMINI_MODEL` e `GROQ_MODEL` no `.env`).
+Para ver os modelos que suas chaves enxergam no plano gratuito: `python -m backend.listar_modelos` (os nomes mudam com frequência; ajuste `GEMINI_MODEL` e `GROQ_MODEL` no `.env`). Configuração usada no experimento: `GEMINI_MODEL=gemini-3.5-flash-lite` (os Flash "cheios" têm cota diária baixa no plano gratuito) e `GROQ_MODEL=openai/gpt-oss-120b`.
+
+![Tela do chat com o painel de fontes](docs/figuras/tela_chat.png)
+
+Dica: `http://127.0.0.1:5173/?q=sua+pergunta` abre o chat já com a pergunta enviada.
 
 ## Como reindexar
 
@@ -79,21 +83,38 @@ Para medir a busca isoladamente: `python -m backend.medir_recuperacao` (hit@1 e 
 
 ## Resultados
 
+> **Números preliminares:** o gabarito das 50 perguntas foi gerado a partir dos PDFs e ainda **não foi revisado por um humano** (`revisado: false`).
+
+Experimento de 11 e 12/11/2026: as mesmas 50 perguntas (45 com resposta nos documentos, 5 sem) respondidas pelo **mesmo LLM** (`gemini-3.5-flash-lite`, plano gratuito, temperatura 0) **sem RAG** e **com RAG**, julgadas por um modelo de outro fornecedor (`openai/gpt-oss-120b` no Groq; a conta não tinha Llama grande de chat disponível).
+
+![Taxa de alucinação sem RAG × com RAG](docs/figuras/alucinacao_sem_vs_com_rag.png)
+
+| Métrica | Sem RAG | Com RAG (Regimento.AI) |
+|---|---|---|
+| **Alucinação** (n = 50) | **54% (27/50)** · IC 95% bootstrap 40%–68% · Wilson 40,4%–67,0% | **2% (1/50)** · IC 95% bootstrap 0%–6% · Wilson 0,4%–10,5% |
+| **Acurácia** (45 respondíveis; correta = 1, parcial = 0,5) | **33,3%** · IC 95% 22,2%–45,6% | **85,6%** · IC 95% 75,6%–94,4% |
+| Acurácia estrita (só "correta") | 22,2% (10/45) | 80,0% (36/45) |
+| **Recusa correta** (5 perguntas sem resposta) | **0/5** | **5/5** |
+| Recusa indevida (respondível, mas recusou) | 0/45 | 3/45 |
+| **Recall@3** (página do gabarito entre as 3 recuperadas) | — | **91,1% (41/45)** · IC 95% 82,2%–97,8% |
+| **Precisão de citação** (citação válida na página do gabarito) | — | **87,2% (41/47)** |
+| Trecho literal confirmado no PDF | — | 100% (47/47) |
+| Respostas com ao menos uma citação na página certa | — | 97,6% (41/42) |
+
+![Acurácia por categoria](docs/figuras/acuracia_por_categoria.png)
+
 ![Recuperação e citações](docs/figuras/citacao_e_recall.png)
 
-| Métrica | Valor | Situação |
-|---|---|---|
-| **Recall@3** (página do gabarito entre as 3 páginas recuperadas) | **41/45 = 91,1%** (IC 95%: 82,2% a 97,8%) | medido |
-| Busca, 7 consultas de validação: hit@3 | denso 5/7 → híbrido 6/7 | medido |
-| Busca, 7 consultas de validação: hit@1 | denso 4/7 → híbrido 3/7 | medido |
-| Alucinação sem RAG × com RAG | — | pendente |
-| Acurácia sem RAG × com RAG | — | pendente |
-| Recusa correta (5 perguntas sem resposta) | — | pendente |
-| Precisão de citação | — | pendente |
+Como ler:
 
-Os itens pendentes dependem do LLM: o experimento ainda não foi rodado com as chaves de API. Com o `.env` preenchido, `python -m eval.run` completa a tabela e gera os gráficos de alucinação (com IC 95% bootstrap) e de acurácia por categoria. Nenhum desses números foi estimado.
+- **Sem RAG**, o modelo responde tudo com segurança, inclusive as 5 perguntas sem resposta nos documentos (0/5 recusas corretas), e inventa números em mais da metade das respostas. Exemplo: dá "quatro semestres" de trancamento, quando o Regime Didático diz até cinco vezes. A pior categoria é prazos/calendário (6%).
+- **Com RAG**, as 3 recusas indevidas (Q07, Q26, Q27) acontecem quando a página certa não foi recuperada. O calendário repete as mesmas frases a cada semestre, e o PPC repete a mesma informação em várias páginas.
+- A **única alucinação com RAG (Q37)** parece falso positivo do juiz. A resposta traz os prazos por modalidade de mobilidade (2 ou 4 períodos intercampi, 2 nacional, 3 internacional), todos nas páginas citadas, mas o gabarito só fala do limite geral de 3. O caso está marcado para a revisão humana.
+- A **precisão de citação é conservadora**. Algumas citações "fora da página do gabarito" estão certas, porque o PPC repete a tabela do catálogo e as cargas horárias em outras páginas.
+- Nas 2 perguntas de **conflito** entre documentos (210 h-a × 60 h-a; SIN496 × SIN 494), o RAG citou só a norma específica e não apontou a divergência (parcial). A página do PPC com o outro valor não entrou no contexto.
+- Busca, 7 consultas de validação (`python -m backend.medir_recuperacao`): hit@3 de 5/7 (só e5) para 6/7 (híbrido); hit@1 de 4/7 para 3/7.
 
-O gabarito das 50 perguntas ainda **não foi revisado por um humano** (`revisado: false`), então todos os números são preliminares.
+Detalhes, por pergunta, em `eval/resultados/2026-11-12.csv` e `eval/resultados/resumo.json`.
 
 ## Limitações
 
@@ -102,6 +123,8 @@ O gabarito das 50 perguntas ainda **não foi revisado por um humano** (`revisado
 - As 9 páginas escaneadas do PPC (ata do CEPE) ficaram fora do índice (sem OCR). O PDF da Resolução de extensão tem erros de OCR na origem.
 - Busca: o calendário repete as mesmas frases a cada semestre e o PPC repete informações em várias páginas, o que causa as 4 falhas de recall@3. O hit@1 do híbrido não melhorou em relação ao denso.
 - 50 perguntas dão intervalos de confiança largos. Os resultados não generalizam para outros cursos.
+- O juiz é um LLM (`gpt-oss-120b`, prompt versionado em `eval/judge_prompt_v1.md`) e erra às vezes (ver Q37). Não houve revisão humana dos vereditos.
+- O plano gratuito limita o uso: o juiz no Groq tem 200 mil tokens por dia, e o experimento completo quase esgotou essa cota. O `eval.run` para com o progresso salvo e continua de onde parou.
 - Modelos de linguagem podem errar mesmo com as fontes. Confira sempre a página citada.
 
 ## Privacidade

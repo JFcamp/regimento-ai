@@ -47,13 +47,40 @@ class Espacador:
             self._proximo = max(agora, self._proximo) + self.intervalo
 
 
-def _espera_retry(resp: httpx.Response, tentativa: int, base: float) -> float:
+def _info_cota(corpo: bytes) -> dict:
+    """Extrai do corpo de um 429 a cota violada (Gemini: QuotaFailure) e o atraso sugerido. Nunca inclui a chave."""
+    try:
+        erro = json.loads(corpo.decode("utf-8", "replace")).get("error", {})
+    except (json.JSONDecodeError, AttributeError):
+        return {}
+    info: dict = {}
+    for d in erro.get("details", []) or []:
+        for v in d.get("violations", []) or []:
+            info.setdefault("quota_id", v.get("quotaId"))
+            info.setdefault("quota_valor", v.get("quotaValue"))
+        if "retryDelay" in d:
+            try:
+                info["retry_s"] = float(str(d["retryDelay"]).rstrip("s"))
+            except ValueError:
+                pass
+    if isinstance(erro.get("message"), str):
+        info["mensagem"] = erro["message"][:200]
+    return info
+
+
+def _eh_cota_diaria(info: dict) -> bool:
+    return "perday" in str(info.get("quota_id", "")).lower().replace("_", "")
+
+
+def _espera_retry(resp: httpx.Response, tentativa: int, base: float, info: dict | None = None) -> float:
     ra = resp.headers.get("retry-after")
     if ra:
         try:
             return min(float(ra), 90.0)
         except ValueError:
             pass
+    if info and info.get("retry_s"):
+        return min(float(info["retry_s"]) + 1.0, 90.0)
     return min(base * (2**tentativa), 60.0) + random.uniform(0, 1.0)
 
 
@@ -90,12 +117,19 @@ class Provedor:
                 try:
                     async with cliente.stream("POST", url, headers=headers, json=corpo) as r:
                         if r.status_code in RETRY_STATUS:
-                            await r.aread()
+                            info = _info_cota(await r.aread()) if r.status_code == 429 else {}
+                            cota = (f" Cota: {info.get('quota_id')} = {info.get('quota_valor')}."
+                                    if info.get("quota_id") else "")
+                            if _eh_cota_diaria(info):  # cota diária: esperar não adianta, para já
+                                raise ErroProvedor("limite_de_uso", f"{self.nome}: cota diária esgotada.{cota}", 429)
                             if tentativa >= self.s.max_retries:
+                                ra = r.headers.get("retry-after")
                                 raise ErroProvedor(
                                     "limite_de_uso" if r.status_code == 429 else "provedor_indisponivel",
-                                    f"{self.nome}: HTTP {r.status_code} após {tentativa + 1} tentativas.", r.status_code)
-                            await self._sleep(_espera_retry(r, tentativa, self.s.backoff_base))
+                                    f"{self.nome}: HTTP {r.status_code} após {tentativa + 1} tentativas.{cota}"
+                                    + (f" Tente de novo em {ra}s." if ra else ""),
+                                    r.status_code)
+                            await self._sleep(_espera_retry(r, tentativa, self.s.backoff_base, info))
                             continue
                         if r.status_code >= 400:
                             detalhe = (await r.aread()).decode("utf-8", "replace")[:300]
@@ -153,6 +187,11 @@ class Groq(Provedor):
             "max_tokens": max_tokens,
             "stream": True,
         }
+        if "gpt-oss" in self.modelo:
+            # modelo de raciocínio: os tokens de pensamento contam no max_tokens; raciocínio baixo e margem extra
+            corpo["reasoning_effort"] = "low"
+            # (no plano gratuito do Groq o limite é por tokens/minuto e conta a saída reservada: não exagerar)
+            corpo["max_tokens"] = max(max_tokens, 1024)
         headers = {"authorization": f"Bearer {self._chave}", "content-type": "application/json"}
         return "https://api.groq.com/openai/v1/chat/completions", headers, corpo
 

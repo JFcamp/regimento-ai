@@ -38,9 +38,15 @@ def julgamento_por_regra(pergunta: dict, resposta: str) -> dict | None:
     return None
 
 
+# O plano gratuito do Groq limita tokens por minuto (8.000 para o gpt-oss-120b); 3 páginas inteiras passam disso.
+MAX_TRECHOS_JUIZ = 14_000
+
+
 def montar_user(pergunta: dict, resposta: str, trechos: str | None) -> str:
     partes = [f"PERGUNTA: {pergunta['pergunta']}", f"GABARITO: {pergunta['resposta_gabarito']}"]
     if trechos:
+        if len(trechos) > MAX_TRECHOS_JUIZ:
+            trechos = trechos[:MAX_TRECHOS_JUIZ] + "\n[... trechos truncados para o juiz ...]"
         partes.append(f"TRECHOS FORNECIDOS AO ASSISTENTE:\n{trechos}")
     partes.append(f"RESPOSTA DO ASSISTENTE: {resposta}")
     return "\n\n".join(partes)
@@ -54,9 +60,10 @@ async def julgar(juiz: Provedor, pergunta: dict, resposta: str, trechos: str | N
     ultimo = ""
     for _ in range(2):  # uma nova tentativa se o JSON vier malformado
         try:
-            ultimo = await juiz.completar(PROMPT_JUIZ, user, temperature=0.0, max_tokens=200)
+            ultimo = await juiz.completar(PROMPT_JUIZ, user, temperature=0.0, max_tokens=1024)
         except ErroProvedor as e:
-            return {"veredito": None, "alucinou": None, "motivo": f"erro do juiz: {e.codigo}", "fonte": "erro", "codigo": e.codigo}
+            return {"veredito": None, "alucinou": None, "motivo": f"erro do juiz: {e.codigo} ({e.mensagem[:160]})",
+                    "fonte": "erro", "codigo": e.codigo}
         d = parse_julgamento(ultimo)
         if d:
             return {**d, "fonte": "llm"}

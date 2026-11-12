@@ -1,17 +1,25 @@
 {
- "gerado_em": "2026-11-11T18:08:53",
- "status": "so_recuperacao",
+ "gerado_em": "2026-11-12T09:17:29",
+ "status": "completo",
  "config": {
   "provedor": "gemini",
-  "modelo": "gemini-flash-latest",
+  "modelo": "gemini-3.5-flash-lite",
   "juiz": "groq",
-  "modelo_juiz": "llama-3.3-70b-versatile",
+  "modelo_juiz": "openai/gpt-oss-120b",
   "temperatura": 0.0,
   "prompt": "v1",
   "prompt_juiz": "v1",
   "hash_perguntas": "a575e6ff6f30",
   "embeddings": "intfloat/multilingual-e5-base",
-  "max_paginas": 3
+  "max_paginas": 3,
+  "verificador_citacoes": "v2",
+  "refeito": [
+   {
+    "modo": "rag",
+    "em": "2026-11-11T20:41:27",
+    "verificador": "v2"
+   }
+  ]
  },
  "n_perguntas": 50,
  "revisadas": 0,
@@ -25,11 +33,125 @@
    0.9778
   ]
  },
- "modos": {},
- "por_categoria": {},
- "pendentes": {
-  "sem_rag": 50,
-  "rag": 50
+ "modos": {
+  "sem_rag": {
+   "n_julgadas": 50,
+   "n_respondiveis": 45,
+   "correta": 10,
+   "parcial": 10,
+   "incorreta": 25,
+   "recusas_em_respondiveis": 0,
+   "acuracia": 0.3333,
+   "acuracia_estrita": 0.2222,
+   "acuracia_ic95": [
+    0.2222,
+    0.4556
+   ],
+   "taxa_alucinacao": 0.54,
+   "alucinacoes": 27,
+   "taxa_alucinacao_ic95": [
+    0.4,
+    0.68
+   ],
+   "taxa_alucinacao_ic95_wilson": [
+    0.404,
+    0.6703
+   ],
+   "recusa_correta": {
+    "acertos": 0,
+    "total": 5
+   }
+  },
+  "rag": {
+   "n_julgadas": 50,
+   "n_respondiveis": 45,
+   "correta": 36,
+   "parcial": 5,
+   "incorreta": 4,
+   "recusas_em_respondiveis": 3,
+   "acuracia": 0.8556,
+   "acuracia_estrita": 0.8,
+   "acuracia_ic95": [
+    0.7556,
+    0.9444
+   ],
+   "taxa_alucinacao": 0.02,
+   "alucinacoes": 1,
+   "taxa_alucinacao_ic95": [
+    0.0,
+    0.06
+   ],
+   "taxa_alucinacao_ic95_wilson": [
+    0.0035,
+    0.105
+   ],
+   "recusa_correta": {
+    "acertos": 5,
+    "total": 5
+   },
+   "citacoes": {
+    "total": 47,
+    "literal_valido": 1.0,
+    "precisao_pagina": 0.8723,
+    "respostas_com_citacao_correta": 0.9762
+   }
+  }
  },
- "csv": "2026-11-11.csv"
+ "por_categoria": {
+  "trancamento": {
+   "sem_rag": {
+    "acuracia": 0.25,
+    "n": 8
+   },
+   "rag": {
+    "acuracia": 0.8125,
+    "n": 8
+   }
+  },
+  "pre-requisitos": {
+   "sem_rag": {
+    "acuracia": 0.4167,
+    "n": 6
+   },
+   "rag": {
+    "acuracia": 1.0,
+    "n": 6
+   }
+  },
+  "horas-complementares-extensao": {
+   "sem_rag": {
+    "acuracia": 0.3333,
+    "n": 12
+   },
+   "rag": {
+    "acuracia": 0.8333,
+    "n": 12
+   }
+  },
+  "prazos-calendario": {
+   "sem_rag": {
+    "acuracia": 0.0625,
+    "n": 8
+   },
+   "rag": {
+    "acuracia": 0.8125,
+    "n": 8
+   }
+  },
+  "outros": {
+   "sem_rag": {
+    "acuracia": 0.5455,
+    "n": 11
+   },
+   "rag": {
+    "acuracia": 0.8636,
+    "n": 11
+   }
+  }
+ },
+ "pendentes": {
+  "sem_rag": 0,
+  "rag": 0
+ },
+ "csv": "2026-11-12.csv"
 }

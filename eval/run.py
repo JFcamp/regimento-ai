@@ -26,13 +26,15 @@ from backend.generator import ErroProvedor, Provedor, obter_provedor
 from backend.prompts import PROMPT_VERSAO, montar_contexto
 from backend.rag import coletar, eh_recusa, responder
 from backend.retriever import Retriever
-from eval.juiz import VERSAO_JUIZ, julgar
+from eval.juiz import VERSAO_JUIZ, julgamento_por_regra, julgar
 from eval.metricas import fontes_aceitas, por_categoria, recall_at_3, resumir_modo
 
 RESULTADOS = ROOT / "eval" / "resultados"
 PERGUNTAS = ROOT / "eval" / "perguntas.json"
 MODOS = ("sem_rag", "rag")
 PARADA = {"limite_de_uso", "chave_ausente", "modelo_ausente", "provedor_nao_suportado"}
+# v2: janelas de palavras para tabelas sem pontuação (corrige citações rejeitadas no catálogo)
+VERIFICADOR = "v2"
 
 
 class Progresso:
@@ -116,15 +118,27 @@ async def executar(
     por_id = {p["id"]: p for p in perguntas}
     pendentes = [k for k, v in progresso.respostas.items() if k.split("|")[0] in por_id and not v.get("erro")
                  and (v.get("julgamento") or {}).get("veredito") is None]
+    parada: str | None = None
     for i, chave in enumerate(pendentes, start=1):
         v = progresso.respostas[chave]
-        j = await julgar(juiz, por_id[v["id"]], v["resposta"], v.get("trechos"))
-        if j.get("codigo") in PARADA:
-            log(f"\nParando no juiz: {j['motivo']}. Progresso salvo; rode de novo para continuar.")
-            return "interrompido"
+        p = por_id[v["id"]]
+        if parada:  # juiz no limite: continua só com o que se julga por regra (sem chamada de API)
+            regra = julgamento_por_regra(p, v["resposta"])
+            if regra is None:
+                continue
+            j = regra
+        else:
+            j = await julgar(juiz, p, v["resposta"], v.get("trechos"))
+            if j.get("codigo") in PARADA:
+                parada = j["motivo"]
+                log(f"\nJuiz no limite: {parada}. Seguindo só com julgamentos por regra.")
+                continue
         v["julgamento"] = j
         progresso.gravar()
         log(f"  juiz [{i}/{len(pendentes)}] {chave}: {j['veredito']} alucinou={j['alucinou']}")
+    if parada:
+        log("Progresso salvo; rode de novo para concluir os julgamentos pendentes.")
+        return "interrompido"
     return "completo"
 
 
@@ -196,6 +210,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--limite", type=int)
     ap.add_argument("--reiniciar", action="store_true")
     ap.add_argument("--sem-graficos", action="store_true")
+    ap.add_argument("--refazer-modo", choices=MODOS, help="apaga respostas e julgamentos só deste modo e refaz")
     a = ap.parse_args(argv)
 
     s = get_settings()
@@ -203,8 +218,17 @@ def main(argv: list[str] | None = None) -> int:
     meta = {"provedor": s.llm_provider, "modelo": s.gemini_model if s.llm_provider == "gemini" else s.groq_model,
             "juiz": s.judge_provider, "modelo_juiz": s.groq_model if s.judge_provider == "groq" else s.gemini_model,
             "temperatura": s.temperature, "prompt": PROMPT_VERSAO, "prompt_juiz": VERSAO_JUIZ,
-            "hash_perguntas": _hash(PERGUNTAS), "embeddings": s.embedding_model, "max_paginas": s.max_paginas}
+            "hash_perguntas": _hash(PERGUNTAS), "embeddings": s.embedding_model, "max_paginas": s.max_paginas,
+            "verificador_citacoes": VERIFICADOR}
     progresso = Progresso(RESULTADOS / "progresso.json", meta, a.reiniciar)
+    if a.refazer_modo:
+        apagar = [k for k in progresso.respostas if k.endswith(f"|{a.refazer_modo}")]
+        for k in apagar:
+            del progresso.respostas[k]
+        progresso.meta.setdefault("refeito", []).append(
+            {"modo": a.refazer_modo, "em": datetime.now().isoformat(timespec="seconds"), "verificador": VERIFICADOR})
+        progresso.gravar()
+        print(f"Refazendo o modo {a.refazer_modo}: {len(apagar)} respostas apagadas.")
 
     provedor = juiz = None
     so_rec = a.so_recuperacao

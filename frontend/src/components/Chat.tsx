@@ -32,7 +32,17 @@ export function Chat() {
     getJSON<Sugestao[]>("/sugestoes")
       .then((s) => setSugestoes(s.map((x) => x.pergunta)))
       .catch(() => undefined);
-    return () => abortRef.current?.abort();
+  }, []);
+
+  // ?q=... na URL envia a pergunta ao abrir (links compartilháveis e demonstração)
+  const enviouDaUrl = useRef(false);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q && !enviouDaUrl.current) {
+      enviouDaUrl.current = true;
+      void enviar(q);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -53,10 +63,13 @@ export function Chat() {
     setSelecao({ troca: id, fonte: null });
     const atualizar = (campo: "rag" | "semRag") => (r: Resposta) =>
       setTrocas((ts) => ts.map((t) => (t.id === id ? { ...t, [campo]: r } : t)));
-    await Promise.all([
+    const [rag] = await Promise.all([
       perguntar(p, "rag", atualizar("rag"), sinal),
       comparar ? perguntar(p, "sem_rag", atualizar("semRag"), sinal) : Promise.resolve(null),
     ]);
+    // destaca a primeira fonte válida no painel
+    const primeira = rag.citacoes.find((c) => c.valida);
+    if (primeira) setSelecao({ troca: id, fonte: primeira.id });
   }
 
   function citar(troca: number, fonte: number) {
