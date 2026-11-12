@@ -76,9 +76,10 @@ async def responder(
         acumulado, res.paginas, s.fuzzy_threshold, s.suporte_threshold, retriever.artigo_em)
     n_validas = sum(c.valida for c in citacoes)
     motivo = None
+    descartada = None
     if not recusa and n_validas == 0:
         # garantia de aceite: resposta do RAG sempre tem >= 1 citação válida ou recusa explícita
-        recusa, motivo, citacoes = True, "sem_citacao_valida", []
+        recusa, motivo, citacoes, descartada = True, "sem_citacao_valida", [], acumulado
         yield {"event": "substituir", "data": {"texto": RECUSA + "."}}
     elif not recusa:
         mortas = citacoes_invalidas_ou_ausentes(acumulado, res.paginas)
@@ -92,6 +93,8 @@ async def responder(
     yield {"event": "fim", "data": {
         "modo": "rag", "recusa": recusa, "motivo": motivo, "n_trechos": n_validas,
         "paginas": paginas_ctx, "divergencia": bool(res.divergencias),
+        # texto que o modelo gerou e o verificador descartou (auditoria; a interface não exibe)
+        **({"resposta_descartada": descartada} if descartada else {}),
     }}
 
 

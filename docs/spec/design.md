@@ -357,3 +357,36 @@ Acurácia por categoria (sem → com RAG): trancamento 25% → 81%; pré-requisi
 **Limites do plano gratuito encontrados.** Groq (`gpt-oss-120b`): 8.000 tokens/minuto e **200.000 tokens/dia**. O julgamento do modo com RAG envia as 3 páginas do contexto, e a cota diária foi praticamente esgotada. Ajustes: trechos para o juiz limitados a 14.000 caracteres, saída reservada de 1.024 tokens, cota diária detectada pelo corpo do 429 (para na hora, sem retentativas inúteis) e, com o juiz no limite, o `eval.run` continua julgando por regra o que não precisa de API. As 2 últimas perguntas que dependiam do juiz foram concluídas depois que a janela móvel liberou tokens.
 
 **Demo offline.** `data/cache/sugeridas.json` tem as respostas reais das 8 perguntas sugeridas, todas com citação válida. Verificado pela tela do chat (screenshot `docs/figuras/tela_chat.png`, gerado com `?q=` na URL).
+
+## 17. Retriever v2: páginas obrigatórias (12/11/2026)
+
+> Gabarito ainda não revisado por humano. Execução do modo com RAG **incompleta**: 3 julgamentos pendentes (Q43, Q44, Q45) por cota do Groq; métricas com RAG v2 sobre 47 perguntas julgadas.
+
+**Regras** (`backend/retriever.py`, `VERSAO_RETRIEVER = "v2"`). Só no modo `hibrido`; os modos de medição (`denso`, `bm25`, `rrf`) não mudam. As páginas obrigatórias entram **além** das `MAX_PAGINAS=3` do ranking e levam `motivo` (`calendario` ou `ppc_conflito`) no `PaginaContexto`.
+
+1. **Calendário.** Disparo: a pergunta cita um semestre (`2026/1`, `2026-2`, "primeiro semestre", "2º semestre") ou tem palavra de data/prazo (quando, até quando, prazo, data, dia, início, começa, término, último dia, calendário, semestre, período letivo). Não dispara em pergunta de pós-graduação. Cada página do documento do tipo `calendario` recebe os semestres pelos cabeçalhos `MÊS/ANO` (março a julho = semestre 1; agosto a dezembro = semestre 2; janeiro e fevereiro fecham o semestre 2 anterior). A página que começa sem cabeçalho herda o mês da anterior; foi assim que a p. 6, com a colação do CRP em 31/07, passou a contar para 2026/1. Escolha dentro do semestre: sinônimos aplicados no lugar ("começa" → "início", "termina" → "término", "até quando"/"prazo" → "último dia"); filtro pelos trechos com mais pares consecutivos de palavras da pergunta (o BM25 sozinho perdia "Início do período letivo" entre dezenas de "início do prazo"); desempate por RRF entre e5 e BM25.
+2. **Conflito com o PPC.** Se um documento de `TEMAS_CONFLITO` (regulamento de atividades complementares, Resolução 6/2022 de extensão) está entre os candidatos, entra o melhor trecho do **corpo** do PPC (fora dos anexos) para a pergunta mais o tema, com **todas as páginas que o trecho cobre**. O trecho certo para atividades complementares começa na p. 17 ("SIN 494") e termina na p. 18 ("60 horas/aula"). O detector de divergência passa a disparar (210 × 60 h-a).
+
+**Métricas novas.** `recall_at_3` continua medindo só o ranking (as 3 primeiras páginas com `motivo = ranking`). `recall_contexto` mede a página do gabarito em qualquer lugar do contexto. `--refazer-modo rag` recalcula também a recuperação.
+
+| Métrica | Sem RAG | RAG v1 | RAG v2 (47 julgadas) |
+|---|---|---|---|
+| Alucinação | 54% (27/50) · Wilson 40,4–67,0% | 2% (1/50) · Wilson 0,4–10,5% | 0% (0/47) · Wilson 0–7,6% |
+| Acurácia (parcial = 0,5) | 33,3% · IC 22,2–45,6% | 85,6% · IC 75,6–94,4% | 90,5% (42) · IC 81,0–97,6% |
+| Acurácia estrita | 22,2% | 80,0% | 88,1% (37/42) |
+| Recusa correta | 0/5 | 5/5 | 5/5 |
+| Recusa indevida | 0 | 3/45 | 3/42 |
+| Recall@3 | — | 91,1% | 91,1% |
+| Recall no contexto | — | 91,1% | 95,6% (43/45) |
+| Precisão de citação | — | 87,2% (41/47) | 83,3% (40/48) |
+| Trecho literal confirmado | — | 100% | 100% |
+
+Por categoria, com RAG v2 (sem → com): trancamento 25% → 94%; pré-requisitos 42% → 100%; horas complementares/extensão 33% → 88%; prazos/calendário 6% → 100%; outros 55% → 75% (8 de 11 julgadas).
+
+**Mudanças por pergunta.** Melhoraram por causa das regras: Q07 (18/09/2026, calendário p. 7), Q27 (02/03/2026, calendário p. 3), Q15 e Q24 (divergência 210 × 60 h-a e SIN496 × SIN 494, com as duas fontes). Melhoraram por variação do modelo ou do juiz, sem mudança de contexto: Q34, Q35, Q37 (antes julgada alucinação, agora correta). **Regressões:** Q18 (correta → parcial) é efeito colateral da regra 2: a pergunta é sobre artigo completo, o PPC entrou e o modelo falou de divergência e omitiu o limite de 90 h-a. Q40 e Q42 (corretas → recusa) **não** são do retriever: o contexto é idêntico ao v1 e o verificador descartou a resposta; ao reproduzir, as duas passaram (suporte 81–99). Temperatura 0 não garante saída idêntica no Gemini. A partir de agora o texto descartado fica em `fim.resposta_descartada`. Não houve nova execução seletiva de perguntas, para não escolher resultado.
+
+**Melhoria futura (não feita):** disparar a regra 2 só quando a pergunta tratar do ponto em conflito (carga horária total, código da disciplina), não de qualquer item do regulamento. Isso evitaria a regressão da Q18.
+
+**Testes.** `backend/tests/test_retriever_rotas.py`: funções puras (semestre da pergunta, gatilho, semestre das páginas com continuação, sinônimos) e integração com o índice real. O calendário é testado com embedding fixo; o conflito usa o e5 real, em subprocesso, porque importar o PyTorch dentro do pytest depois do FAISS derruba o processo no Windows (conflito de DLLs; não ocorre no servidor nem no `eval.run`). Suíte: 109 testes.
+
+**Cota.** A refação usou ~50 chamadas ao Gemini e ~42 ao juiz. O Groq bateu no limite em Q41 (concluída depois de 1 minuto) e de novo em Q43, pedindo 432 s. A execução parou com o progresso salvo, conforme combinado.

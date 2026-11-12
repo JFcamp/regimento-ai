@@ -25,9 +25,9 @@ from backend.config import ROOT, Settings, get_settings
 from backend.generator import ErroProvedor, Provedor, obter_provedor
 from backend.prompts import PROMPT_VERSAO, montar_contexto
 from backend.rag import coletar, eh_recusa, responder
-from backend.retriever import Retriever
+from backend.retriever import VERSAO_RETRIEVER, Retriever
 from eval.juiz import VERSAO_JUIZ, julgamento_por_regra, julgar
-from eval.metricas import fontes_aceitas, por_categoria, recall_at_3, resumir_modo
+from eval.metricas import fontes_aceitas, por_categoria, recall_at_3, recall_contexto, resumir_modo
 
 RESULTADOS = ROOT / "eval" / "resultados"
 PERGUNTAS = ROOT / "eval" / "perguntas.json"
@@ -83,7 +83,7 @@ async def executar(
     for p in perguntas:
         if p["id"] not in progresso.recuperacao:
             res = retriever.buscar(p["pergunta"], "hibrido")
-            progresso.recuperacao[p["id"]] = [[pg.documento, pg.pagina] for pg in res.paginas]
+            progresso.recuperacao[p["id"]] = [[pg.documento, pg.pagina, pg.motivo] for pg in res.paginas]
     progresso.gravar()
     if so_recuperacao:
         return "so_recuperacao"
@@ -160,6 +160,7 @@ def consolidar(perguntas: list[dict], progresso: Progresso) -> list[dict]:
                 "citacoes_avaliadas": _avaliar_citacoes(p, citacoes) if modo == "rag" else [],
                 "paginas_recuperadas": rec if modo == "rag" else [],
                 "recall3": recall_at_3(p, rec) if modo == "rag" else None,
+                "recall_ctx": recall_contexto(p, rec) if modo == "rag" else None,
             })
     return linhas
 
@@ -168,6 +169,7 @@ def gravar_saidas(perguntas: list[dict], progresso: Progresso, status: str, past
     linhas = consolidar(perguntas, progresso)
     julgadas = [l for l in linhas if l["veredito"] is not None]
     rec = [l["recall3"] for l in linhas if l["modo"] == "rag" and l["recall3"] is not None]
+    rec_ctx = [l["recall_ctx"] for l in linhas if l["modo"] == "rag" and l["recall_ctx"] is not None]
     from eval.metricas import bootstrap_ic
 
     resumo = {
@@ -178,7 +180,9 @@ def gravar_saidas(perguntas: list[dict], progresso: Progresso, status: str, past
         "revisadas": sum(bool(p["revisado"]) for p in perguntas),
         "aviso": "Gabarito ainda não revisado por humano (revisado=false): números preliminares.",
         "recuperacao": {"recall_at_3": round(sum(rec) / len(rec), 4) if rec else None, "acertos": sum(rec),
-                        "n": len(rec), "ic95": bootstrap_ic([1.0 if x else 0.0 for x in rec])},
+                        "n": len(rec), "ic95": bootstrap_ic([1.0 if x else 0.0 for x in rec]),
+                        "recall_contexto": round(sum(rec_ctx) / len(rec_ctx), 4) if rec_ctx else None,
+                        "acertos_contexto": sum(rec_ctx)},
         "modos": {m: resumir_modo([l for l in julgadas if l["modo"] == m]) for m in MODOS
                   if any(l["modo"] == m for l in julgadas)},
         "por_categoria": por_categoria(julgadas),
@@ -188,7 +192,8 @@ def gravar_saidas(perguntas: list[dict], progresso: Progresso, status: str, past
     csv_path = pasta / f"{date.today().isoformat()}.csv"
     campos = ["id", "categoria", "modo", "respondivel", "conflito", "documento_gabarito", "pagina_gabarito", "pergunta",
               "resposta", "recusa", "veredito", "alucinou", "motivo_juiz", "fonte_julgamento", "erro",
-              "n_citacoes", "n_citacoes_validas", "citacao_pagina_correta", "paginas_recuperadas", "recall3"]
+              "n_citacoes", "n_citacoes_validas", "citacao_pagina_correta", "paginas_recuperadas", "recall3",
+              "recall_ctx"]
     with csv_path.open("w", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=campos, extrasaction="ignore")
         w.writeheader()
@@ -196,7 +201,9 @@ def gravar_saidas(perguntas: list[dict], progresso: Progresso, status: str, past
             cit = l["citacoes_avaliadas"]
             w.writerow({**l, "n_citacoes": len(cit), "n_citacoes_validas": sum(c["valida"] for c in cit),
                         "citacao_pagina_correta": any(c["valida"] and c["pagina_correta"] for c in cit) if cit else "",
-                        "paginas_recuperadas": "; ".join(f"{d} p{pg}" for d, pg in l["paginas_recuperadas"])})
+                        "paginas_recuperadas": "; ".join(
+                            f"{x[0]} p{x[1]}" + (f" ({x[2]})" if len(x) > 2 and x[2] != "ranking" else "")
+                            for x in l["paginas_recuperadas"])})
     resumo["csv"] = csv_path.name
     (pasta / "resumo.json").write_text(json.dumps(resumo, ensure_ascii=False, indent=1), encoding="utf-8")
     return resumo
@@ -219,12 +226,14 @@ def main(argv: list[str] | None = None) -> int:
             "juiz": s.judge_provider, "modelo_juiz": s.groq_model if s.judge_provider == "groq" else s.gemini_model,
             "temperatura": s.temperature, "prompt": PROMPT_VERSAO, "prompt_juiz": VERSAO_JUIZ,
             "hash_perguntas": _hash(PERGUNTAS), "embeddings": s.embedding_model, "max_paginas": s.max_paginas,
-            "verificador_citacoes": VERIFICADOR}
+            "verificador_citacoes": VERIFICADOR, "retriever": VERSAO_RETRIEVER}
     progresso = Progresso(RESULTADOS / "progresso.json", meta, a.reiniciar)
     if a.refazer_modo:
         apagar = [k for k in progresso.respostas if k.endswith(f"|{a.refazer_modo}")]
         for k in apagar:
             del progresso.respostas[k]
+        if a.refazer_modo == "rag":
+            progresso.recuperacao = {}  # o retriever pode ter mudado: recalcula as páginas recuperadas
         progresso.meta.setdefault("refeito", []).append(
             {"modo": a.refazer_modo, "em": datetime.now().isoformat(timespec="seconds"), "verificador": VERIFICADOR})
         progresso.gravar()

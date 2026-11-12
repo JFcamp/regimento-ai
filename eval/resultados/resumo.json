@@ -1,6 +1,6 @@
 {
- "gerado_em": "2026-11-12T09:17:29",
- "status": "completo",
+ "gerado_em": "2026-11-12T10:51:21",
+ "status": "interrompido",
  "config": {
   "provedor": "gemini",
   "modelo": "gemini-3.5-flash-lite",
@@ -18,8 +18,14 @@
     "modo": "rag",
     "em": "2026-11-11T20:41:27",
     "verificador": "v2"
+   },
+   {
+    "modo": "rag",
+    "em": "2026-11-12T10:14:38",
+    "verificador": "v2"
    }
-  ]
+  ],
+  "retriever": "v2"
  },
  "n_perguntas": 50,
  "revisadas": 0,
@@ -31,7 +37,9 @@
   "ic95": [
    0.8222,
    0.9778
-  ]
+  ],
+  "recall_contexto": 0.9556,
+  "acertos_contexto": 43
  },
  "modos": {
   "sem_rag": {
@@ -63,37 +71,37 @@
    }
   },
   "rag": {
-   "n_julgadas": 50,
-   "n_respondiveis": 45,
-   "correta": 36,
-   "parcial": 5,
-   "incorreta": 4,
+   "n_julgadas": 47,
+   "n_respondiveis": 42,
+   "correta": 37,
+   "parcial": 2,
+   "incorreta": 3,
    "recusas_em_respondiveis": 3,
-   "acuracia": 0.8556,
-   "acuracia_estrita": 0.8,
+   "acuracia": 0.9048,
+   "acuracia_estrita": 0.881,
    "acuracia_ic95": [
-    0.7556,
-    0.9444
+    0.8095,
+    0.9762
    ],
-   "taxa_alucinacao": 0.02,
-   "alucinacoes": 1,
+   "taxa_alucinacao": 0.0,
+   "alucinacoes": 0,
    "taxa_alucinacao_ic95": [
     0.0,
-    0.06
+    0.0
    ],
    "taxa_alucinacao_ic95_wilson": [
-    0.0035,
-    0.105
+    0.0,
+    0.0756
    ],
    "recusa_correta": {
     "acertos": 5,
     "total": 5
    },
    "citacoes": {
-    "total": 47,
+    "total": 48,
     "literal_valido": 1.0,
-    "precisao_pagina": 0.8723,
-    "respostas_com_citacao_correta": 0.9762
+    "precisao_pagina": 0.8333,
+    "respostas_com_citacao_correta": 0.9744
    }
   }
  },
@@ -104,7 +112,7 @@
     "n": 8
    },
    "rag": {
-    "acuracia": 0.8125,
+    "acuracia": 0.9375,
     "n": 8
    }
   },
@@ -124,7 +132,7 @@
     "n": 12
    },
    "rag": {
-    "acuracia": 0.8333,
+    "acuracia": 0.875,
     "n": 12
    }
   },
@@ -134,7 +142,7 @@
     "n": 8
    },
    "rag": {
-    "acuracia": 0.8125,
+    "acuracia": 1.0,
     "n": 8
    }
   },
@@ -144,14 +152,14 @@
     "n": 11
    },
    "rag": {
-    "acuracia": 0.8636,
-    "n": 11
+    "acuracia": 0.75,
+    "n": 8
    }
   }
  },
  "pendentes": {
   "sem_rag": 0,
-  "rag": 0
+  "rag": 3
  },
  "csv": "2026-11-12.csv"
 }

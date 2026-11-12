@@ -43,10 +43,23 @@ def fontes_aceitas(p: dict) -> set[tuple[str, int]]:
     return {(p["documento"], p["pagina"])} | {(f["documento"], f["pagina"]) for f in p.get("fontes_aceitas", [])}
 
 
+def _ranking(paginas: list[list]) -> list[tuple[str, int]]:
+    """Páginas escolhidas pelo ranking (sem as obrigatórias). Aceita [doc, pág] ou [doc, pág, motivo]."""
+    return [(x[0], int(x[1])) for x in paginas if len(x) < 3 or x[2] == "ranking"]
+
+
 def recall_at_3(p: dict, paginas: list[list]) -> bool | None:
+    """Página do gabarito entre as 3 primeiras do ranking (mede a busca, sem as páginas obrigatórias)."""
     if not p["respondivel"]:
         return None
-    return bool(fontes_aceitas(p) & {(d, int(pg)) for d, pg in paginas[:3]})
+    return bool(fontes_aceitas(p) & set(_ranking(paginas)[:3]))
+
+
+def recall_contexto(p: dict, paginas: list[list]) -> bool | None:
+    """Página do gabarito em qualquer lugar do contexto enviado ao modelo (inclui as páginas obrigatórias)."""
+    if not p["respondivel"]:
+        return None
+    return bool(fontes_aceitas(p) & {(x[0], int(x[1])) for x in paginas})
 
 
 def _taxa(vs: list[bool]) -> float | None:

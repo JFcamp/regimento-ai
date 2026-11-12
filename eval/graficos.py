@@ -67,11 +67,15 @@ def fig_alucinacao(resumo: dict, pasta: Path) -> list[Path]:
     ax.yaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1.0))
     ax.set_ylabel("Respostas com alucinação")
     ax.set_title("Taxa de alucinação (barras de erro: IC 95% bootstrap)")
-    n = resumo["modos"][modos[0]]["n_julgadas"]
+    ns = [resumo["modos"][m]["n_julgadas"] for m in modos]
+    n = f"n = {ns[0]} por modo" if len(set(ns)) == 1 else f"n = {ns[0]} sem RAG · {ns[1]} com RAG"
+    pend = sum((resumo.get("pendentes") or {}).values())
+    if pend:
+        n += f" ({pend} pendentes)"
     modelo = resumo.get("config", {}).get("modelo", "")
-    fig.text(0.01, -0.06, f"n = {n} perguntas por modo · mesmo LLM ({modelo}), temperatura 0 · juiz de outro fornecedor\n"
-             "Perto de 0%, o bootstrap subestima a incerteza; o IC de Wilson complementa · gabarito ainda não revisado",
-             fontsize=8, color="#6B7280")
+    fig.text(0.01, -0.09, f"{n} · mesmo LLM ({modelo}), temperatura 0 · juiz de outro fornecedor\n"
+             "Perto de 0%, o bootstrap subestima a incerteza; o IC de Wilson complementa\n"
+             "Gabarito ainda não revisado por humano", fontsize=8, color="#6B7280")
     return _salvar(fig, "alucinacao_sem_vs_com_rag", pasta)
 
 
@@ -88,7 +92,11 @@ def fig_acuracia_categoria(resumo: dict, pasta: Path) -> list[Path]:
         barras = ax.bar(xs, vals, width=largura, color=COR_MODO[m], label=ROTULO_MODO[m])
         for b, v in zip(barras, vals):
             ax.text(b.get_x() + b.get_width() / 2, v + 0.02, _pct(v), ha="center", fontsize=8, color=TEXTO)
-    rot = [f"{ROTULO_CATEGORIA[c]}\n(n={resumo['por_categoria'][c].get('rag', {}).get('n', 0)})" for c in cats]
+    def _n(c: str) -> str:
+        ns = {m: resumo["por_categoria"][c].get(m, {}).get("n", 0) for m in modos}
+        return f"n={ns['rag']}" if len(set(ns.values())) == 1 else f"n={ns['sem_rag']}/{ns['rag']}"
+
+    rot = [f"{ROTULO_CATEGORIA[c]}\n({_n(c)})" for c in cats]
     ax.set_xticks(range(len(cats)), rot, fontsize=9)
     ax.set_ylim(0, 1.1)
     ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
@@ -104,14 +112,16 @@ def fig_citacao_recall(resumo: dict, pasta: Path) -> list[Path]:
     rec = resumo.get("recuperacao", {})
     if rec.get("recall_at_3") is None:
         return []
-    barras = [("Recall@3\n(página do gabarito\nentre as 3 recuperadas)", rec["recall_at_3"], rec.get("ic95"))]
+    barras = [("Recall@3\n(página do gabarito\nentre as 3 do ranking)", rec["recall_at_3"], rec.get("ic95"))]
+    if rec.get("recall_contexto") is not None:
+        barras.append(("Recall no contexto\n(inclui páginas\nobrigatórias)", rec["recall_contexto"], None))
     cit = resumo.get("modos", {}).get("rag", {}).get("citacoes")
     if cit and cit.get("precisao_pagina") is not None:
         barras.append(("Precisão de citação\n(citação válida na\npágina correta)", cit["precisao_pagina"], None))
     if cit and cit.get("literal_valido") is not None:
         barras.append(("Trecho literal\nverificado", cit["literal_valido"], None))
     fig, ax = plt.subplots(figsize=(6.8 if len(barras) > 1 else 4.6, 4.3))
-    cores = [BORDO, BORDO_CLARO, CINZA]
+    cores = [BORDO, "#A63B49", BORDO_CLARO, CINZA]
     for i, (rot, v, ic) in enumerate(barras):
         kw = {"yerr": [[v - ic[0]], [ic[1] - v]], "capsize": 8, "ecolor": TEXTO} if ic else {}
         ax.bar(i, v, color=cores[i], width=0.55, **kw)

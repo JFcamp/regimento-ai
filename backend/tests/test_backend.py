@@ -285,6 +285,7 @@ def test_resposta_sem_citacao_valida_vira_recusa(tmp_path: Path) -> None:
     d = dict(ev)
     assert ("substituir", {"texto": RECUSA + "."}) in ev
     assert d["fim"]["recusa"] is True and d["fim"]["motivo"] == "sem_citacao_valida" and d["citacoes"] == []
+    assert d["fim"]["resposta_descartada"] == "O prazo é de dez anos, sem exceções."
 
 
 def test_recusa_do_modelo_e_preservada(tmp_path: Path) -> None:
